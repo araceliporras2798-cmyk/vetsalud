@@ -1,0 +1,153 @@
+
+:host {
+  display: block;
+  min-height: 100vh;
+  font-family: "Segoe UI", Arial, Helvetica, sans-serif;
+  color: #173b56;
+  background: #f5f9fc;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.encabezado {
+  min-height: 100px;
+  padding: 18px 4%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+  background: #ffffff;
+  border-bottom: 1px solid #e4edf3;
+  box-shadow: 0 4px 18px rgba(23, 74, 126, 0.05);
+}
+
+.marca {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  color: #174a7e;
+  text-decoration: none;
+}
+
+.logo {
+  width: 62px;
+  height: 62px;
+  flex-shrink: 0;
+}
+
+.marca strong {
+  display: block;
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: -1px;
+}
+
+.marca small {
+  display: block;
+  margin-top: 5px;
+  color: #6b8295;
+  font-size: 13px;
+}
+
+.menu {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.menu a {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 12px 15px;
+  border-radius: 12px;
+  color: #49647b;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 650;
+  transition: background 0.2s ease, color 0.2s ease,
+              transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.menu a:hover {
+  background: #eaf6fa;
+  color: #087f91;
+  transform: translateY(-1px);
+}
+
+.menu a.activo {
+  background: #174a7e;
+  color: #ffffff;
+  box-shadow: 0 4px 10px rgba(23, 74, 126, 0.18);
+}
+
+.nav-icon {
+  font-size: 21px;
+  line-height: 1;
+}
+
+.contenido {
+  width: min(1500px, 94%);
+  min-height: 70vh;
+  margin: 30px auto;
+}
+
+.pie {
+  padding: 25px 16px;
+  text-align: center;
+  color: #71869a;
+  background: #ffffff;
+  border-top: 1px solid #e4edf3;
+  font-size: 13px;
+}
+
+/* Adaptación para tabletas */
+@media (max-width: 1000px) {
+  .encabezado {
+    justify-content: center;
+  }
+
+  .menu {
+    justify-content: center;
+  }
+}
+
+/* Adaptación para celulares */
+@media (max-width: 600px) {
+  .encabezado {
+    padding: 16px 4%;
+    gap: 18px;
+  }
+
+  .marca strong {
+    font-size: 28px;
+  }
+
+  .logo {
+    width: 52px;
+    height: 52px;
+  }
+
+  .menu {
+    width: 100%;
+    gap: 6px;
+  }
+
+  .menu a {
+    padding: 10px 11px;
+    font-size: 13px;
+  }
+
+  .nav-icon {
+    font-size: 18px;
+  }
+
+  .contenido {
+    width: 92%;
+    margin: 20px auto;
+  }
+}

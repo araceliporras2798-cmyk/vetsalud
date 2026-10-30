@@ -1,0 +1,184 @@
+```html
+<section class="encabezado-pagina">
+  <div>
+    <p class="etiqueta">GESTIÓN DE PACIENTES</p>
+    <h2>Registro de mascotas</h2>
+    <p>Administra la información de las mascotas y sus dueños.</p>
+  </div>
+
+  <div class="foto-mascotas-banner"
+       role="img"
+       aria-label="Perro y gato en atención veterinaria"></div>
+</section>
+
+<section class="panel-mascotas">
+  <div class="panel-titulo">
+    <div>
+      <h3>Mis pacientes</h3>
+      <p>Consulta y organiza los datos de las mascotas registradas.</p>
+    </div>
+
+    <button type="button" class="boton-principal"
+            (click)="mostrarFormulario = !mostrarFormulario">
+      {{ mostrarFormulario ? 'Cancelar' : '+ Registrar mascota' }}
+    </button>
+  </div>
+
+  @if (mensaje) {
+    <div class="mensaje-exito">{{ mensaje }}</div>
+  }
+
+  @if (error) {
+    <div class="mensaje-error">{{ error }}</div>
+  }
+
+  @if (mostrarFormulario) {
+    <form class="formulario-mascota" (ngSubmit)="registrarMascota()">
+      <h3>Datos de la mascota</h3>
+
+      <div class="campos-formulario">
+        <div class="campo">
+          <label for="nombre">Nombre *</label>
+          <input id="nombre" name="nombre" type="text"
+                 [(ngModel)]="nuevaMascota.nombre" required>
+        </div>
+
+        <div class="campo">
+          <label for="especie">Especie *</label>
+          <select id="especie" name="especie"
+                  [(ngModel)]="nuevaMascota.especie" required>
+            <option value="Perro">Perro</option>
+            <option value="Gato">Gato</option>
+            <option value="Ave">Ave</option>
+            <option value="Conejo">Conejo</option>
+            <option value="Otro">Otro</option>
+          </select>
+        </div>
+
+        <div class="campo">
+          <label for="raza">Raza *</label>
+          <input id="raza" name="raza" type="text"
+                 [(ngModel)]="nuevaMascota.raza" required>
+        </div>
+
+        <div class="campo">
+          <label for="fechaNacimiento">Fecha de nacimiento *</label>
+          <input id="fechaNacimiento" name="fechaNacimiento" type="date"
+                 [(ngModel)]="nuevaMascota.fechaNacimiento" required>
+        </div>
+
+        <div class="campo">
+          <label for="sexo">Sexo *</label>
+          <select id="sexo" name="sexo"
+                  [(ngModel)]="nuevaMascota.sexo" required>
+            <option value="Macho">Macho</option>
+            <option value="Hembra">Hembra</option>
+          </select>
+        </div>
+
+        <div class="campo">
+          <label for="peso">Peso en kg *</label>
+          <input id="peso" name="peso" type="number"
+                 min="0.1" step="0.1"
+                 [(ngModel)]="nuevaMascota.peso" required>
+        </div>
+
+        <div class="campo">
+          <label for="color">Color *</label>
+          <input id="color" name="color" type="text"
+                 [(ngModel)]="nuevaMascota.color" required>
+        </div>
+
+        <div class="campo">
+          <label for="duenoId">Dueño *</label>
+          <select id="duenoId" name="duenoId"
+                  [(ngModel)]="nuevaMascota.duenoId" required>
+            <option [ngValue]="0" disabled>Selecciona un dueño</option>
+            @for (dueno of duenos; track dueno.id) {
+              <option [ngValue]="dueno.id">
+                {{ dueno.nombres }} {{ dueno.apellidos }}
+              </option>
+            }
+          </select>
+        </div>
+
+        <div class="campo campo-completo">
+          <label for="observaciones">Observaciones</label>
+          <textarea id="observaciones" name="observaciones" rows="3"
+                    [(ngModel)]="nuevaMascota.observaciones"></textarea>
+        </div>
+      </div>
+
+      @if (duenos.length === 0) {
+        <p class="mensaje-error">
+          No hay dueños registrados. Primero debemos agregar una opción para registrar dueños.
+        </p>
+      }
+
+      <div class="acciones-formulario">
+        <button type="button" class="boton-secundario"
+                (click)="mostrarFormulario = false">
+          Cancelar
+        </button>
+        <button type="submit" class="boton-principal"
+                [disabled]="duenos.length === 0">
+          Guardar mascota
+        </button>
+      </div>
+    </form>
+  }
+
+  <div class="buscador">
+    <label for="buscarMascota">Buscar mascota</label>
+    <input id="buscarMascota" name="buscarMascota"
+           type="search"
+           placeholder="Escribe el nombre, especie o raza..."
+           [(ngModel)]="terminoBusqueda">
+  </div>
+
+  @if (mascotasFiltradas.length > 0) {
+    <div class="tabla-contenedor">
+      <table class="tabla-mascotas">
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Especie</th>
+            <th>Raza</th>
+            <th>Sexo</th>
+            <th>Peso</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (mascota of mascotasFiltradas; track mascota.id) {
+            <tr>
+              <td>{{ mascota.nombre }}</td>
+              <td>{{ mascota.especie }}</td>
+              <td>{{ mascota.raza }}</td>
+              <td>{{ mascota.sexo }}</td>
+              <td>{{ mascota.peso }} kg</td>
+              <td>
+                <button type="button" class="boton-eliminar"
+                        (click)="eliminarMascota(mascota.id)">
+                  Eliminar
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  } @else {
+    <div class="estado-vacio">
+      <h3>Aún no hay mascotas registradas</h3>
+      <p>Cuando registres una mascota, su información aparecerá en esta sección.</p>
+      @if (!mostrarFormulario) {
+        <button type="button" class="boton-secundario"
+                (click)="mostrarFormulario = true">
+          Registrar primera mascota
+        </button>
+      }
+    </div>
+  }
+</section>
+```

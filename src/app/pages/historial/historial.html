@@ -1,0 +1,203 @@
+
+<section class="pagina-historial">
+  <header class="encabezado-historial">
+    <div>
+      <p class="subtitulo">VETSALUD · CUIDADO Y BIENESTAR</p>
+      <h1>Historial clínico</h1>
+      <p class="descripcion">
+        Registra y consulta los antecedentes médicos de cada mascota.
+      </p>
+    </div>
+
+    <img
+      src="https://images.unsplash.com/photo-1628009368231-7bb7cfcb0def?auto=format&fit=crop&w=700&q=85"
+      alt="Atención veterinaria">
+  </header>
+
+  <div class="resumen-historial">
+    <article class="indicador">
+      <span class="indicador-icono">+</span>
+      <div>
+        <p>Consultas registradas</p>
+        <strong>{{ totalRegistros }}</strong>
+      </div>
+    </article>
+
+    <article class="indicador">
+      <span class="indicador-icono turquesa">♥</span>
+      <div>
+        <p>Mascotas atendidas</p>
+        <strong>{{ mascotasAtendidas }}</strong>
+      </div>
+    </article>
+  </div>
+
+  <div class="mensaje exito" *ngIf="mensaje">{{ mensaje }}</div>
+  <div class="mensaje error" *ngIf="error">{{ error }}</div>
+
+  <section class="tarjeta-historial">
+    <div class="titulo-seccion">
+      <h2>Registrar consulta</h2>
+      <p>Los campos con * son obligatorios.</p>
+    </div>
+
+    <div class="aviso" *ngIf="mascotas.length === 0">
+      No hay mascotas registradas. Primero agrega una mascota en la sección Mascotas.
+    </div>
+
+    <form (ngSubmit)="registrarConsulta()" #formHistorial="ngForm">
+      <div class="formulario-grid">
+        <div class="campo">
+          <label for="mascota">Mascota *</label>
+          <select
+            id="mascota"
+            name="mascotaId"
+            [(ngModel)]="nuevoRegistro.mascotaId"
+            required>
+            <option [ngValue]="0" disabled>Selecciona una mascota</option>
+            <option *ngFor="let mascota of mascotas" [ngValue]="mascota.id">
+              {{ mascota.nombre }} — {{ mascota.especie }}
+            </option>
+          </select>
+        </div>
+
+        <div class="campo">
+          <label for="fecha">Fecha de consulta *</label>
+          <input
+            id="fecha"
+            name="fecha"
+            type="date"
+            [max]="fechaActual()"
+            [(ngModel)]="nuevoRegistro.fecha"
+            required>
+        </div>
+
+        <div class="campo">
+          <label for="tipoConsulta">Tipo de consulta *</label>
+          <select
+            id="tipoConsulta"
+            name="tipoConsulta"
+            [(ngModel)]="nuevoRegistro.tipoConsulta"
+            required>
+            <option value="" disabled>Selecciona el tipo</option>
+            <option value="Consulta general">Consulta general</option>
+            <option value="Vacunación">Vacunación</option>
+            <option value="Desparasitación">Desparasitación</option>
+            <option value="Control médico">Control médico</option>
+            <option value="Emergencia">Emergencia</option>
+            <option value="Cirugía">Cirugía</option>
+            <option value="Otro">Otro</option>
+          </select>
+        </div>
+
+        <div class="campo">
+          <label for="veterinario">Veterinario responsable *</label>
+          <input
+            id="veterinario"
+            name="veterinario"
+            [(ngModel)]="nuevoRegistro.veterinario"
+            placeholder="Nombre del veterinario"
+            required>
+        </div>
+
+        <div class="campo campo-completo">
+          <label for="diagnostico">Diagnóstico o evaluación *</label>
+          <textarea
+            id="diagnostico"
+            name="diagnostico"
+            rows="3"
+            [(ngModel)]="nuevoRegistro.diagnostico"
+            placeholder="Describe los hallazgos de la consulta"
+            required></textarea>
+        </div>
+
+        <div class="campo campo-completo">
+          <label for="tratamiento">Tratamiento indicado</label>
+          <textarea
+            id="tratamiento"
+            name="tratamiento"
+            rows="2"
+            [(ngModel)]="nuevoRegistro.tratamiento"
+            placeholder="Medicamentos o cuidados indicados"></textarea>
+        </div>
+
+        <div class="campo campo-completo">
+          <label for="observaciones">Observaciones adicionales</label>
+          <textarea
+            id="observaciones"
+            name="observaciones"
+            rows="2"
+            [(ngModel)]="nuevoRegistro.observaciones"
+            placeholder="Notas adicionales"></textarea>
+        </div>
+      </div>
+
+      <div class="acciones">
+        <button type="submit" [disabled]="mascotas.length === 0">
+          Guardar registro clínico
+        </button>
+      </div>
+    </form>
+  </section>
+
+  <section class="tarjeta-historial">
+    <div class="titulo-seccion">
+      <h2>Registros clínicos</h2>
+      <p>Consulta los antecedentes médicos de cada mascota.</p>
+    </div>
+
+    <div class="campo filtro-historial">
+      <label for="filtroMascota">Filtrar historial por mascota</label>
+      <select
+        id="filtroMascota"
+        name="filtroMascota"
+        [(ngModel)]="mascotaSeleccionada">
+        <option [ngValue]="null">Todas las mascotas</option>
+        <option
+          *ngFor="let mascota of mascotas"
+          [ngValue]="mascota.id">
+          {{ mascota.nombre }} — {{ mascota.especie }}
+        </option>
+      </select>
+    </div>
+
+    <div class="sin-registros" *ngIf="registrosFiltrados.length === 0">
+      <h3>Sin registros clínicos</h3>
+      <p>
+        No hay consultas registradas para la selección actual.
+      </p>
+    </div>
+
+    <div class="lista-registros" *ngIf="registrosFiltrados.length > 0">
+      <article class="registro" *ngFor="let registro of registrosFiltrados">
+        <div class="registro-cabecera">
+          <div>
+            <span class="tipo">{{ registro.tipoConsulta }}</span>
+            <h3>{{ obtenerNombreMascota(registro.mascotaId) }}</h3>
+            <p class="fecha">Fecha: {{ registro.fecha }}</p>
+          </div>
+
+          <button
+            class="boton-eliminar"
+            type="button"
+            (click)="eliminarRegistro(registro)">
+            Eliminar
+          </button>
+        </div>
+
+        <div class="detalle-registro">
+          <p><strong>Veterinario:</strong> {{ registro.veterinario }}</p>
+          <p><strong>Diagnóstico:</strong> {{ registro.diagnostico }}</p>
+
+          <p *ngIf="registro.tratamiento">
+            <strong>Tratamiento:</strong> {{ registro.tratamiento }}
+          </p>
+
+          <p *ngIf="registro.observaciones">
+            <strong>Observaciones:</strong> {{ registro.observaciones }}
+          </p>
+        </div>
+      </article>
+    </div>
+  </section>
+</section>

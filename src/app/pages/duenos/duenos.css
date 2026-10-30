@@ -1,0 +1,174 @@
+
+:host {
+  display: block;
+  color: #173c55;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.encabezado-duenos {
+  padding: 30px 35px;
+  margin-bottom: 24px;
+  border-radius: 15px;
+  background: #e8f5f7;
+}
+
+.etiqueta {
+  color: #078b98;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+}
+
+.encabezado-duenos h2 {
+  margin: 12px 0;
+  color: #163f5c;
+  font-size: 30px;
+}
+
+.encabezado-duenos p:last-child,
+.descripcion {
+  color: #6b8293;
+  line-height: 1.6;
+}
+
+.panel-duenos {
+  padding: 28px;
+  margin-bottom: 24px;
+  border: 1px solid #e0eaf0;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 4px 15px rgba(30, 60, 80, 0.04);
+}
+
+.panel-duenos h3 {
+  margin: 0 0 8px;
+  color: #163f5c;
+  font-size: 22px;
+}
+
+.descripcion {
+  margin-bottom: 24px;
+}
+
+.campos-dueno {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.campo label {
+  color: #42627b;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.campo input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #d6e3eb;
+  border-radius: 8px;
+  background: #fff;
+  color: #173c55;
+  font: inherit;
+}
+
+.campo input:focus {
+  outline: none;
+  border-color: #078b98;
+  box-shadow: 0 0 0 3px rgba(8, 127, 140, 0.12);
+}
+
+.acciones-dueno {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 24px;
+}
+
+.boton-guardar {
+  padding: 13px 20px;
+  border: 0;
+  border-radius: 8px;
+  background: #087f8c;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.boton-guardar:hover {
+  background: #066b76;
+}
+
+.mensaje-exito,
+.mensaje-error {
+  margin: 18px 0;
+  padding: 13px 16px;
+  border-radius: 8px;
+  line-height: 1.5;
+}
+
+.mensaje-exito {
+  border: 1px solid #b9e5d0;
+  background: #effaf4;
+  color: #176b45;
+}
+
+.mensaje-error {
+  border: 1px solid #f0caca;
+  background: #fff4f4;
+  color: #a52d2d;
+}
+
+.sin-registros {
+  padding-top: 12px;
+  color: #6b8293;
+}
+
+.tabla-contenedor {
+  width: 100%;
+  overflow-x: auto;
+  margin-top: 20px;
+}
+
+.tabla-contenedor table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.tabla-contenedor th,
+.tabla-contenedor td {
+  padding: 14px 12px;
+  border-bottom: 1px solid #e5edf2;
+}
+
+.tabla-contenedor th {
+  background: #f2f8fa;
+  color: #42627b;
+  font-size: 13px;
+}
+
+@media (max-width: 650px) {
+  .encabezado-duenos,
+  .panel-duenos {
+    padding: 20px;
+  }
+
+  .campos-dueno {
+    grid-template-columns: 1fr;
+  }
+
+  .acciones-dueno .boton-guardar {
+    width: 100%;
+  }
+}

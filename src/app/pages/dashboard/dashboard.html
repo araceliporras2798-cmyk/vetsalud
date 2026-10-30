@@ -1,0 +1,120 @@
+
+<section class="bienvenida">
+  <div class="texto-bienvenida">
+    <p class="etiqueta">SISTEMA DE GESTIÓN VETERINARIA</p>
+    <h2>Bienvenido a VetSalud</h2>
+    <p>
+      Administra los dueños y sus mascotas, organiza las citas
+      y consulta los historiales clínicos desde un solo lugar.
+    </p>
+  </div>
+  <div class="foto-principal" role="img"
+       aria-label="Perro y gato atendidos en una clínica veterinaria"></div>
+</section>
+
+<section class="resumen">
+
+  <!-- TARJETA DE DUEÑOS -->
+  <article class="tarjeta duenos">
+    <div class="contenido-tarjeta">
+      <div class="icono icono-duenos">
+        <svg viewBox="0 0 48 48" aria-hidden="true">
+          <circle cx="24" cy="15" r="9" fill="currentColor"/>
+          <path d="M7 42C7 31 14 25 24 25S41 31 41 42Z"
+                fill="currentColor"/>
+        </svg>
+      </div>
+      <h3>Dueños</h3>
+      <p>Registra propietarios y consulta sus datos de contacto.</p>
+      <a routerLink="/duenos">Gestionar dueños <span>→</span></a>
+    </div>
+    <div class="foto foto-duenos" role="img"
+         aria-label="Propietario con su mascota"></div>
+  </article>
+
+  <!-- TARJETA DE MASCOTAS -->
+  <article class="tarjeta mascotas">
+    <div class="contenido-tarjeta">
+      <div class="icono icono-mascotas">
+        <svg viewBox="0 0 48 48" aria-hidden="true">
+          <ellipse cx="24" cy="31" rx="12" ry="9" fill="currentColor"/>
+          <ellipse cx="10" cy="18" rx="5" ry="7" fill="currentColor"/>
+          <ellipse cx="20" cy="10" rx="5" ry="7" fill="currentColor"/>
+          <ellipse cx="31" cy="10" rx="5" ry="7" fill="currentColor"/>
+          <ellipse cx="39" cy="19" rx="5" ry="7" fill="currentColor"/>
+        </svg>
+      </div>
+      <h3>Mascotas</h3>
+      <p>Registra mascotas y consulta sus datos.</p>
+      <a routerLink="/mascotas">Gestionar mascotas <span>→</span></a>
+    </div>
+    <div class="foto foto-mascotas" role="img"
+         aria-label="Perro y gato"></div>
+  </article>
+
+  <!-- TARJETA DE CITAS -->
+  <article class="tarjeta citas">
+    <div class="contenido-tarjeta">
+      <div class="icono icono-citas">
+        <svg viewBox="0 0 48 48" aria-hidden="true">
+          <rect x="7" y="11" width="34" height="31" rx="4"
+                fill="none" stroke="currentColor" stroke-width="4"/>
+          <path d="M15 6V16M33 6V16M8 21H40"
+                stroke="currentColor" stroke-width="4"
+                stroke-linecap="round"/>
+          <path d="M16 28H21M27 28H32M16 34H21"
+                stroke="currentColor" stroke-width="3"
+                stroke-linecap="round"/>
+        </svg>
+      </div>
+      <h3>Citas</h3>
+      <p>Organiza las consultas y los horarios.</p>
+      <a routerLink="/citas">Gestionar citas <span>→</span></a>
+    </div>
+    <div class="foto foto-citas" role="img"
+         aria-label="Calendario y estetoscopio"></div>
+  </article>
+
+  <!-- TARJETA DE HISTORIAL CLÍNICO -->
+  <article class="tarjeta historial">
+    <div class="contenido-tarjeta">
+      <div class="icono icono-historial">
+        <svg viewBox="0 0 48 48" aria-hidden="true">
+          <rect x="9" y="5" width="30" height="38" rx="4"
+                fill="none" stroke="currentColor" stroke-width="4"/>
+          <path d="M18 5V11H30V5M17 22H31M17 29H31M17 36H26"
+                stroke="currentColor" stroke-width="3"
+                stroke-linecap="round"/>
+          <path d="M24 15V21M21 18H27"
+                stroke="currentColor" stroke-width="3"
+                stroke-linecap="round"/>
+        </svg>
+      </div>
+      <h3>Historial clínico</h3>
+      <p>Consulta diagnósticos, vacunas y tratamientos.</p>
+      <a routerLink="/historial">Ver historial <span>→</span></a>
+    </div>
+    <div class="foto foto-historial" role="img"
+         aria-label="Ficha clínica veterinaria"></div>
+  </article>
+
+</section>
+
+<section class="informacion">
+  <div class="simbolo-clinica" aria-hidden="true">
+    <svg viewBox="0 0 90 90">
+      <path d="M45 77C32 65 12 52 12 33C12 17 29 13 41 29L45 34L49 29C61 13 78 17 78 33C78 52 58 65 45 77Z"
+            fill="none" stroke="currentColor" stroke-width="5"/>
+      <circle cx="32" cy="35" r="5" fill="currentColor"/>
+      <circle cx="44" cy="28" r="5" fill="currentColor"/>
+      <circle cx="56" cy="35" r="5" fill="currentColor"/>
+      <ellipse cx="44" cy="45" rx="12" ry="9" fill="currentColor"/>
+    </svg>
+  </div>
+  <h3>¿Qué puedes hacer con VetSalud?</h3>
+  <ul>
+    <li>Registrar propietarios y sus mascotas.</li>
+    <li>Organizar las citas veterinarias.</li>
+    <li>Registrar consultas, vacunas, diagnósticos y tratamientos.</li>
+  </ul>
+</section>

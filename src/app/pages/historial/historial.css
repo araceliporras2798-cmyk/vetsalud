@@ -1,0 +1,279 @@
+
+:host {
+  display: block;
+  width: 100%;
+  color: #263445;
+}
+
+.historial-container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 28px;
+}
+
+.historial-header {
+  margin-bottom: 28px;
+}
+
+.historial-header h1 {
+  margin: 0 0 8px;
+  color: #203047;
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.historial-header p {
+  margin: 0;
+  color: #718096;
+  font-size: 14px;
+}
+
+/* RESUMEN */
+
+.resumen-historial {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  margin-bottom: 28px;
+}
+
+.tarjeta-resumen {
+  padding: 22px;
+  background: #ffffff;
+  border: 1px solid #e5eaf0;
+  border-radius: 12px;
+  box-shadow: 0 3px 12px rgba(30, 50, 70, 0.04);
+}
+
+.tarjeta-resumen h3 {
+  margin: 0 0 10px;
+  color: #718096;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.tarjeta-resumen strong {
+  color: #243b53;
+  font-size: 30px;
+  font-weight: 700;
+}
+
+/* FORMULARIO */
+
+.formulario-historial {
+  margin-bottom: 32px;
+  padding: 26px;
+  background: #ffffff;
+  border: 1px solid #e5eaf0;
+  border-radius: 14px;
+  box-shadow: 0 3px 12px rgba(30, 50, 70, 0.04);
+}
+
+.formulario-historial h2,
+.lista-historial h2 {
+  margin: 0 0 22px;
+  color: #263b53;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.formulario-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.campo label {
+  color: #40536b;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.campo input,
+.campo select,
+.campo textarea {
+  width: 100%;
+  padding: 11px 13px;
+  color: #263445;
+  background: #ffffff;
+  border: 1px solid #d8e0e8;
+  border-radius: 8px;
+  outline: none;
+  font-family: inherit;
+  font-size: 14px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  box-sizing: border-box;
+}
+
+.campo input:focus,
+.campo select:focus,
+.campo textarea:focus {
+  border-color: #3b82a0;
+  box-shadow: 0 0 0 3px rgba(59, 130, 160, 0.12);
+}
+
+.campo textarea {
+  min-height: 90px;
+  resize: vertical;
+}
+
+.campo-completo {
+  grid-column: 1 / -1;
+}
+
+.btn-registrar {
+  margin-top: 20px;
+  padding: 12px 22px;
+  color: #ffffff;
+  background: #287b91;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-registrar:hover {
+  background: #206477;
+}
+
+/* MENSAJES */
+
+.mensaje-exito,
+.mensaje-error {
+  margin: 16px 0;
+  padding: 12px 15px;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.mensaje-exito {
+  color: #236044;
+  background: #e8f5ed;
+  border: 1px solid #c7e8d2;
+}
+
+.mensaje-error {
+  color: #9b3030;
+  background: #fff0f0;
+  border: 1px solid #f2cccc;
+}
+
+/* LISTA DE HISTORIALES */
+
+.lista-historial {
+  padding: 26px;
+  background: #ffffff;
+  border: 1px solid #e5eaf0;
+  border-radius: 14px;
+  box-shadow: 0 3px 12px rgba(30, 50, 70, 0.04);
+}
+
+/* FILTRO POR MASCOTA */
+
+.filtro-historial {
+  max-width: 420px;
+  margin-bottom: 24px;
+}
+
+.filtro-historial select {
+  width: 100%;
+}
+
+/* TARJETAS DE REGISTROS */
+
+.registro-card {
+  margin-bottom: 16px;
+  padding: 20px;
+  background: #f9fbfc;
+  border: 1px solid #e5eaf0;
+  border-left: 4px solid #3b8298;
+  border-radius: 10px;
+}
+
+.registro-card:last-child {
+  margin-bottom: 0;
+}
+
+.registro-card h3 {
+  margin: 0 0 12px;
+  color: #263b53;
+  font-size: 17px;
+}
+
+.registro-card p {
+  margin: 8px 0;
+  color: #536579;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.registro-card strong {
+  color: #34495e;
+}
+
+.btn-eliminar {
+  margin-top: 12px;
+  padding: 9px 15px;
+  color: #b33b3b;
+  background: #fff1f1;
+  border: 1px solid #f0cccc;
+  border-radius: 7px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-eliminar:hover {
+  background: #ffe2e2;
+}
+
+/* ESTADO VACÍO */
+
+.sin-registros {
+  padding: 28px 18px;
+  color: #718096;
+  background: #f8fafc;
+  border: 1px dashed #cbd5e0;
+  border-radius: 10px;
+  text-align: center;
+  font-size: 14px;
+}
+
+/* DISEÑO RESPONSIVE */
+
+@media (max-width: 768px) {
+  .historial-container {
+    padding: 18px;
+  }
+
+  .resumen-historial {
+    grid-template-columns: 1fr;
+  }
+
+  .formulario-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .campo-completo {
+    grid-column: auto;
+  }
+
+  .formulario-historial,
+  .lista-historial {
+    padding: 18px;
+  }
+
+  .historial-header h1 {
+    font-size: 24px;
+  }
+}

@@ -1,0 +1,57 @@
+
+<header class="encabezado">
+  <a class="marca" routerLink="/" aria-label="Inicio de VetSalud">
+    <svg class="logo" viewBox="0 0 64 64" aria-hidden="true">
+      <path d="M32 58C22 49 8 41 8 28C8 18 20 14 28 24L32 29L36 24C44 14 56 18 56 28C56 41 42 49 32 58Z" fill="currentColor"/>
+      <circle cx="18" cy="13" r="6" fill="currentColor"/>
+      <circle cx="30" cy="8" r="6" fill="currentColor"/>
+      <circle cx="42" cy="10" r="6" fill="currentColor"/>
+      <circle cx="52" cy="18" r="5" fill="currentColor"/>
+      <path d="M32 32V46M25 39H39" stroke="white" stroke-width="4" stroke-linecap="round"/>
+    </svg>
+
+    <span>
+      <strong>VetSalud</strong>
+      <small>Sistema de gestión veterinaria</small>
+    </span>
+  </a>
+
+  <nav class="menu">
+    <a
+      routerLink="/"
+      routerLinkActive="activo"
+      [routerLinkActiveOptions]="{ exact: true }"
+    >
+      <span class="nav-icon">⌂</span>
+      Inicio
+    </a>
+
+    <a routerLink="/duenos" routerLinkActive="activo">
+      <span class="nav-icon">●</span>
+      Dueños
+    </a>
+
+    <a routerLink="/mascotas" routerLinkActive="activo">
+      <span class="nav-icon">●</span>
+      Mascotas
+    </a>
+
+    <a routerLink="/citas" routerLinkActive="activo">
+      <span class="nav-icon">▦</span>
+      Citas
+    </a>
+
+    <a routerLink="/historial" routerLinkActive="activo">
+      <span class="nav-icon">▤</span>
+      Historial clínico
+    </a>
+  </nav>
+</header>
+
+<main class="contenido">
+  <router-outlet></router-outlet>
+</main>
+
+<footer class="pie">
+  VetSalud © 2026 · Sistema de gestión veterinaria
+</footer>

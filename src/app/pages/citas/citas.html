@@ -1,0 +1,201 @@
+
+<section class="pagina-citas">
+  <header class="encabezado-pagina">
+    <div class="texto-encabezado">
+      <p class="subtitulo">VETSALUD · ATENCIÓN VETERINARIA</p>
+      <h1>Agenda de citas</h1>
+      <p class="descripcion">
+        Organiza las consultas y brinda una atención oportuna a cada mascota.
+      </p>
+    </div>
+
+    <div class="imagen-encabezado">
+      <img
+        src="https://images.unsplash.com/photo-1628009368231-7bb7cfcb0def?auto=format&fit=crop&w=700&q=85"
+        alt="Veterinaria atendiendo a una mascota">
+    </div>
+  </header>
+
+  <div class="resumen">
+    <div class="icono-resumen">✚</div>
+    <div>
+      <p>Total de citas registradas</p>
+      <strong>{{ totalCitas }}</strong>
+    </div>
+  </div>
+
+  <div class="mensaje exito" *ngIf="mensaje">
+    {{ mensaje }}
+  </div>
+
+  <div class="mensaje error" *ngIf="error">
+    {{ error }}
+  </div>
+
+  <section class="tarjeta">
+    <div class="titulo-seccion">
+      <div>
+        <h2>Agendar nueva cita</h2>
+        <p class="ayuda">
+          Completa los datos para registrar una consulta veterinaria.
+        </p>
+      </div>
+      <span class="etiqueta">Nueva cita</span>
+    </div>
+
+    <div class="aviso" *ngIf="mascotas.length === 0">
+      Todavía no hay mascotas disponibles.
+      Registra primero una mascota en la sección Mascotas.
+    </div>
+
+    <form (ngSubmit)="agendarCita()" #formCita="ngForm">
+      <div class="formulario-grid">
+        <div class="campo">
+          <label for="mascota">Mascota *</label>
+          <select
+            id="mascota"
+            name="mascotaId"
+            [(ngModel)]="nuevaCita.mascotaId"
+            required>
+            <option [ngValue]="0" disabled>
+              Selecciona una mascota
+            </option>
+            <option
+              *ngFor="let mascota of mascotas"
+              [ngValue]="mascota.id">
+              {{ mascota.nombre }} — {{ mascota.especie }}
+            </option>
+          </select>
+        </div>
+
+        <div class="campo">
+          <label for="fecha">Fecha de la cita *</label>
+          <input
+            id="fecha"
+            name="fecha"
+            type="date"
+            [min]="fechaMinima"
+            [(ngModel)]="nuevaCita.fecha"
+            required>
+        </div>
+
+        <div class="campo">
+          <label for="hora">Hora *</label>
+          <input
+            id="hora"
+            name="hora"
+            type="time"
+            [(ngModel)]="nuevaCita.hora"
+            required>
+        </div>
+
+        <div class="campo">
+          <label for="motivo">Motivo de consulta *</label>
+          <input
+            id="motivo"
+            name="motivo"
+            type="text"
+            [(ngModel)]="nuevaCita.motivo"
+            placeholder="Ej. Vacunación, control o revisión"
+            required>
+        </div>
+
+        <div class="campo campo-completo">
+          <label for="veterinario">Veterinario responsable *</label>
+          <input
+            id="veterinario"
+            name="veterinario"
+            type="text"
+            [(ngModel)]="nuevaCita.veterinario"
+            placeholder="Nombre del veterinario"
+            required>
+        </div>
+
+        <div class="campo campo-completo">
+          <label for="observaciones">Observaciones</label>
+          <textarea
+            id="observaciones"
+            name="observaciones"
+            [(ngModel)]="nuevaCita.observaciones"
+            rows="3"
+            placeholder="Información adicional sobre la consulta"></textarea>
+        </div>
+      </div>
+
+      <div class="acciones-formulario">
+        <button
+          class="boton-principal"
+          type="submit"
+          [disabled]="mascotas.length === 0">
+          Agendar cita
+        </button>
+      </div>
+    </form>
+  </section>
+
+  <section class="tarjeta">
+    <div class="titulo-seccion">
+      <div>
+        <h2>Citas registradas</h2>
+        <p class="ayuda">
+          Consulta las citas y actualiza su estado.
+        </p>
+      </div>
+      <span class="contador">{{ totalCitas }} citas</span>
+    </div>
+
+    <div class="estado-vacio" *ngIf="citas.length === 0">
+      <div class="icono-vacio">▣</div>
+      <h3>Aún no hay citas registradas</h3>
+      <p>Las citas que registres aparecerán aquí.</p>
+    </div>
+
+    <div class="tabla-contenedor" *ngIf="citas.length > 0">
+      <table>
+        <thead>
+          <tr>
+            <th>Mascota</th>
+            <th>Fecha y hora</th>
+            <th>Motivo</th>
+            <th>Veterinario</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let cita of citas">
+            <td>
+              <strong>{{ obtenerNombreMascota(cita.mascotaId) }}</strong>
+            </td>
+            <td>
+              {{ cita.fecha }}
+              <span class="hora">{{ cita.hora }}</span>
+            </td>
+            <td>{{ cita.motivo }}</td>
+            <td>{{ cita.veterinario }}</td>
+            <td>
+              <select
+                class="selector-estado"
+                [ngModel]="cita.estado"
+                [ngModelOptions]="{standalone: true}"
+                (ngModelChange)="cambiarEstado(cita, $event)">
+                <option value="Pendiente">Pendiente</option>
+                <option value="Confirmada">Confirmada</option>
+                <option value="Atendida">Atendida</option>
+                <option value="Cancelada">Cancelada</option>
+              </select>
+            </td>
+            <td>
+              <button
+                class="boton-cancelar"
+                type="button"
+                (click)="eliminarCita(cita)">
+                Eliminar
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</section>
