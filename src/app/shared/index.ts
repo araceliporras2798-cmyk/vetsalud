@@ -37,3 +37,4 @@ export * from './components/contenedor-toasts/contenedor-toasts';
 export * from './pipes/moneda.pipe';
 export * from './pipes/codigo-mascota.pipe';
 export * from './pipes/rango-horario.pipe';
+export * from './services/datos-demo.service';

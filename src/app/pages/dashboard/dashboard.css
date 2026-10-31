@@ -43,7 +43,7 @@
   letter-spacing: -1.4px;
 }
 
-.texto-bienvenida p:last-child {
+.texto-bienvenida p:not(.etiqueta) {
   max-width: 510px;
   color: #496980;
   font-size: 16px;
@@ -310,7 +310,7 @@
     background-position: center;
   }
 
-  .texto-bienvenida p:last-child {
+  .texto-bienvenida p:not(.etiqueta) {
     font-size: 14px;
     line-height: 1.7;
   }
@@ -403,3 +403,11 @@
   .proxima { grid-template-columns: 1fr; gap: 6px; }
   .proxima-estado { text-align: left; }
 }
+
+.acciones-demo {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 22px;
+}
+.acciones-demo .btn { border-radius: 11px; font-weight: 700; padding: 10px 18px; }

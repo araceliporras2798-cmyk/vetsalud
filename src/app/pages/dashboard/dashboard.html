@@ -7,6 +7,16 @@
       Administra los dueños y sus mascotas, organiza las citas
       y consulta los historiales clínicos desde un solo lugar.
     </p>
+    <div class="acciones-demo">
+      <button type="button" class="btn btn-primary" (click)="cargarDemo()">
+        ⬇ Cargar datos de demostración
+      </button>
+      @if (hayDatos) {
+        <button type="button" class="btn btn-outline-danger" (click)="borrarDatos()">
+          Borrar todos los datos
+        </button>
+      }
+    </div>
   </div>
   <div class="foto-principal" role="img"
        aria-label="Perro y gato atendidos en una clínica veterinaria"></div>
