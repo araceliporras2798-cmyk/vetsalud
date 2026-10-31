@@ -20,4 +20,21 @@ describe('DatosDemoService', () => {
     servicio.borrarTodo();
     expect(servicio.hayDatos()).toBe(false);
   });
+
+  it('inicializar() carga la demo solo la primera vez', () => {
+    const servicio = TestBed.inject(DatosDemoService);
+
+    servicio.inicializar();
+    expect(servicio.hayDatos()).toBe(true);
+
+    servicio.borrarTodo();
+    servicio.inicializar();
+    expect(servicio.hayDatos()).toBe(false); // ya se inicializó antes: respeta que el usuario borró todo
+  });
+
+  it('inicializar() no reemplaza datos que ya existen', () => {
+    localStorage.setItem('vetsalud_duenos', JSON.stringify([{ id: 9, nombres: 'Propio' }]));
+    TestBed.inject(DatosDemoService).inicializar();
+    expect(JSON.parse(localStorage.getItem('vetsalud_duenos')!)[0].nombres).toBe('Propio');
+  });
 });

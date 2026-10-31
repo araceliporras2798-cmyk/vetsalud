@@ -90,10 +90,10 @@ export class Dashboard {
   async cargarDemo(): Promise<void> {
     if (this.hayDatos) {
       const confirmado = await this.confirmacion.confirmar({
-        titulo: 'Cargar datos de demostración',
+        titulo: 'Restaurar datos de ejemplo',
         mensaje: 'Se reemplazarán los dueños, mascotas, citas e historial que tengas registrados.',
         detalle: 'Se cargarán 4 dueños, 6 mascotas, 14 citas y 5 atenciones de ejemplo.',
-        textoConfirmar: 'Sí, cargar demo',
+        textoConfirmar: 'Sí, restaurar',
         tipo: 'warning'
       });
       if (!confirmado) return;

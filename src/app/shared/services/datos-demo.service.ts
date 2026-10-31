@@ -18,8 +18,31 @@ export const CLAVES_VETSALUD = [
  * Las fechas se calculan a partir del día actual, así siempre hay citas de hoy,
  * próximas, vencidas y atenciones en el historial.
  */
+/** Marca que indica que la app ya se abrió antes en este navegador. */
+export const CLAVE_INICIALIZADO = 'vetsalud_inicializado';
+
 @Injectable({ providedIn: 'root' })
 export class DatosDemoService {
+  /**
+   * Se ejecuta al iniciar la aplicación (provideAppInitializer en app.config.ts).
+   * La PRIMERA vez que se abre la app en un navegador, si no hay datos, carga los
+   * datos de ejemplo automáticamente. Después no vuelve a hacerlo: si el usuario
+   * borra todo, la app queda vacía como él lo decidió.
+   */
+  inicializar(): void {
+    try {
+      if (localStorage.getItem(CLAVE_INICIALIZADO)) {
+        return;
+      }
+      if (!this.hayDatos()) {
+        this.cargar();
+      }
+      localStorage.setItem(CLAVE_INICIALIZADO, new Date().toISOString());
+    } catch {
+      // Si el navegador bloquea localStorage, la app sigue funcionando sin datos de ejemplo.
+    }
+  }
+
   hayDatos(): boolean {
     return CLAVES_VETSALUD.some(clave => {
       try {

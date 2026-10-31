@@ -69,7 +69,7 @@ npm run build        # genera la carpeta dist/vetsalud
 
 ### Flujo sugerido para probar la app
 
-> **Atajo para la demostración:** en **Inicio** presiona **“Cargar datos de demostración”**. Se cargan 4 dueños, 6 mascotas (una registrada con especie “Otro”), 14 citas con costo (de hoy, próximas, vencidas y canceladas) y 5 atenciones en el historial. Las fechas se calculan a partir del día actual. El botón **“Borrar todos los datos”** deja la app vacía otra vez.
+> **Datos de ejemplo incluidos:** la **primera vez** que se abre la app en un navegador se cargan automáticamente 4 dueños, 6 mascotas (una con especie “Otro”), 14 citas con costo (de hoy, próximas, vencidas y canceladas) y 5 atenciones en el historial, con fechas calculadas a partir del día actual. En **Inicio**, el botón **“Restaurar datos de ejemplo”** los vuelve a cargar y **“Borrar todos los datos”** deja la app vacía (y así se mantiene).
 
 1. **Dueños →** registra un propietario (prueba un DNI con 5 dígitos o un celular que no empiece con 9 para ver las validaciones).
 2. **Mascotas →** “+ Registrar mascota”, elige el dueño y una fecha de nacimiento: la edad se calcula al instante. Prueba la especie **Otro** para ver el campo manual.
