@@ -50,12 +50,20 @@ export class ErrorCampo {
     return this.traducir(control.errors);
   }
 
+  /** Concordancia de género y número: "El DNI es obligatorio", "La fecha es obligatoria". */
+  private obligatorio(etiqueta: string): string {
+    if (/^Las /.test(etiqueta)) return 'obligatorias';
+    if (/^Los /.test(etiqueta)) return 'obligatorios';
+    if (/^La /.test(etiqueta)) return 'obligatoria';
+    return 'obligatorio';
+  }
+
   private traducir(errores: ValidationErrors): string {
     const [clave, detalle] = Object.entries(errores)[0];
     const e = this.etiqueta;
 
     const mensajes: Record<string, string> = {
-      required: `${e} es obligatorio.`,
+      required: `${e} es ${this.obligatorio(e)}.`,
       minlength: `${e} debe tener al menos ${detalle?.requiredLength} caracteres.`,
       maxlength: `${e} admite como máximo ${detalle?.requiredLength} caracteres.`,
       min: `${e} debe ser mayor o igual a ${detalle?.min}.`,

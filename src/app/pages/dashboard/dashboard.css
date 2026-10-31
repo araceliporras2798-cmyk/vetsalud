@@ -369,7 +369,7 @@
 .proximas-titulo a, .sin-citas a { color: #087f91; font-weight: 700; text-decoration: none; }
 .proxima {
   display: grid;
-  grid-template-columns: 140px 1fr auto;
+  grid-template-columns: 170px 1fr auto;
   align-items: center;
   gap: 16px;
   margin-top: 10px;
@@ -377,7 +377,7 @@
   border: 1px solid #edf1f5;
   border-radius: 12px;
 }
-.proxima-fecha strong { display: block; color: #174a7e; font-size: 20px; }
+.proxima-fecha strong { display: block; color: #174a7e; font-size: 18px; }
 .proxima-fecha span, .proxima-detalle span { color: #647b8d; font-size: 13px; }
 .proxima-detalle strong { display: block; color: #243b53; }
 .proxima-estado { text-align: right; }

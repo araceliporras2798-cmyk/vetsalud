@@ -30,7 +30,7 @@ describe('RepositorioLocal (herencia y polimorfismo)', () => {
       nombres: 'Ana', apellidos: 'Torres', dni: '12345678', telefono: '987654321', correo: '', direccion: 'Av. Lima 1'
     });
     const cita = citas.agendarCita({
-      mascotaId: 1, fecha: '2099-01-01', hora: '10:00', motivo: 'Vacuna',
+      mascotaId: 1, fecha: '2099-01-01', hora: '10:00', motivo: 'Vacuna', costo: 50,
       veterinario: 'Dra. Paz', estado: 'Pendiente', observaciones: ''
     });
 
@@ -48,7 +48,7 @@ describe('RepositorioLocal (herencia y polimorfismo)', () => {
   it('una cita atendida no se puede eliminar (validarEliminacion sobrescrito)', () => {
     const citas = TestBed.inject(CitaService);
     const cita = citas.agendarCita({
-      mascotaId: 1, fecha: '2099-01-02', hora: '11:00', motivo: 'Control',
+      mascotaId: 1, fecha: '2099-01-02', hora: '11:00', motivo: 'Control', costo: 50,
       veterinario: 'Dr. Salas', estado: 'Atendida', observaciones: ''
     });
     expect(() => citas.eliminarCita(cita.id)).toThrowError(/atendida/);

@@ -34,3 +34,6 @@ export * from './services/confirmacion.service';
 export * from './services/notificacion.service';
 export * from './components/dialogo-confirmacion/dialogo-confirmacion';
 export * from './components/contenedor-toasts/contenedor-toasts';
+export * from './pipes/moneda.pipe';
+export * from './pipes/codigo-mascota.pipe';
+export * from './pipes/rango-horario.pipe';

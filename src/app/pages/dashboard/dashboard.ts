@@ -10,6 +10,8 @@ import {
   EstadoCitaPipe,
   FechaLegiblePipe,
   FechaUtil,
+  MonedaPipe,
+  RangoHorarioPipe,
   ResaltarCitaProximaDirective,
   TarjetaResumen,
   TiempoRestantePipe
@@ -24,7 +26,9 @@ import {
     FechaLegiblePipe,
     EstadoCitaPipe,
     TiempoRestantePipe,
-    ResaltarCitaProximaDirective
+    ResaltarCitaProximaDirective,
+    MonedaPipe,
+    RangoHorarioPipe
   ],
   styleUrl: './dashboard.css',
   templateUrl: './dashboard.html',

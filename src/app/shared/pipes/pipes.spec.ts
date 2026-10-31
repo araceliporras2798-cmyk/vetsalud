@@ -34,3 +34,24 @@ describe('Pipes personalizados', () => {
     expect(pipe.transform('2026-10-29', '10:00', ahora)).toBe('Hora vencida');
   });
 });
+
+import { CodigoMascotaPipe } from './codigo-mascota.pipe';
+import { MonedaPipe } from './moneda.pipe';
+import { RangoHorarioPipe } from './rango-horario.pipe';
+
+describe('Pipes de la revisión (moneda, código y horario)', () => {
+  it('moneda muestra soles con dos decimales', () => {
+    expect(new MonedaPipe().transform(50)).toBe('S/ 50.00');
+    expect(new MonedaPipe().transform(1250.5)).toBe('S/ 1,250.50');
+    expect(new MonedaPipe().transform(undefined)).toBe('—');
+  });
+
+  it('codigoMascota genera el código del paciente', () => {
+    expect(new CodigoMascotaPipe().transform(3)).toBe('MAS-0003');
+  });
+
+  it('rangoHorario muestra el bloque completo', () => {
+    expect(new RangoHorarioPipe().transform('09:00')).toBe('09:00 – 09:30');
+    expect(new RangoHorarioPipe().transform('19:30')).toBe('19:30 – 20:00');
+  });
+});

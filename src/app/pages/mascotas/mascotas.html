@@ -51,6 +51,15 @@
           </select>
         </div>
 
+        @if (esOtraEspecie) {
+          <div class="campo">
+            <label for="especieOtra">¿Qué especie es? *</label>
+            <input id="especieOtra" type="text" formControlName="especieOtra" appValidacionVisual
+                   placeholder="Ej. Hámster, tortuga, cuy">
+            <app-error-campo [control]="c.especieOtra" etiqueta="La especie" />
+          </div>
+        }
+
         <div class="campo">
           <label for="raza">Raza *</label>
           <input id="raza" type="text" formControlName="raza" appValidacionVisual placeholder="Ej. Mestizo">
@@ -118,7 +127,7 @@
   <div class="buscador">
     <label for="buscarMascota">Buscar mascota</label>
     <input id="buscarMascota" type="search" [formControl]="busqueda"
-           placeholder="Escribe el nombre, especie o raza...">
+           placeholder="Código (MAS-0001), nombre, especie o raza...">
   </div>
 
   @if (mascotasFiltradas.length > 0) {
@@ -126,6 +135,7 @@
       <table class="tabla-mascotas">
         <thead>
           <tr>
+            <th>Código</th>
             <th>Nombre</th>
             <th>Especie</th>
             <th>Raza</th>
@@ -139,6 +149,7 @@
         <tbody>
           @for (mascota of mascotasFiltradas; track mascota.id) {
             <tr>
+              <td><span class="badge text-bg-light border">{{ mascota.id | codigoMascota }}</span></td>
               <td><strong>{{ mascota.nombre }}</strong></td>
               <td>{{ mascota.especie }}</td>
               <td>{{ mascota.raza }}</td>

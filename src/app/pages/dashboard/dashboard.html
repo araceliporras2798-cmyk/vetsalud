@@ -33,12 +33,12 @@
     @for (cita of proximasCitas; track cita.id) {
       <div class="proxima" [appResaltarCitaProxima]="cita" [horasAviso]="48">
         <div class="proxima-fecha">
-          <strong>{{ cita.hora }}</strong>
+          <strong>{{ cita.hora | rangoHorario }}</strong>
           <span>{{ cita.fecha | fechaLegible }}</span>
         </div>
         <div class="proxima-detalle">
           <strong>{{ nombreMascota(cita.mascotaId) }}</strong>
-          <span>{{ cita.motivo }} · {{ cita.veterinario }}</span>
+          <span>{{ cita.motivo }} · {{ cita.costo | moneda }} · {{ cita.veterinario }}</span>
         </div>
         <div class="proxima-estado">
           <span [class]="cita.estado | estadoCita:'clase'">{{ cita.estado | estadoCita }}</span>

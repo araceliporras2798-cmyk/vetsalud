@@ -22,3 +22,28 @@ describe('Mascotas', () => {
     expect(component).toBeTruthy();
   });
 });
+
+describe('Mascotas · especie "Otro"', () => {
+  beforeEach(async () => {
+    localStorage.clear();
+    await TestBed.configureTestingModule({ imports: [Mascotas], providers: [provideRouter([])] }).compileComponents();
+  });
+
+  it('habilita y exige el campo de especie manual solo cuando se elige "Otro"', () => {
+    const fixture = TestBed.createComponent(Mascotas);
+    fixture.detectChanges();
+    const c = fixture.componentInstance.formulario.controls;
+
+    expect(c.especieOtra.enabled).toBe(false);
+
+    c.especie.setValue('Otro');
+    expect(c.especieOtra.enabled).toBe(true);
+    expect(c.especieOtra.hasError('required')).toBe(true);
+
+    c.especieOtra.setValue('Hámster');
+    expect(c.especieOtra.valid).toBe(true);
+
+    c.especie.setValue('Gato');
+    expect(c.especieOtra.enabled).toBe(false);
+  });
+});

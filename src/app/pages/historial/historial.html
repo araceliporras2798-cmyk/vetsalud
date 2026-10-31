@@ -4,7 +4,7 @@
       <p class="subtitulo">VETSALUD · CUIDADO Y BIENESTAR</p>
       <h1>Historial clínico</h1>
       <p class="descripcion">
-        Registra y consulta los antecedentes médicos de cada mascota.
+        Registra cada atención a partir de su cita y consulta los antecedentes de cada mascota.
       </p>
     </div>
 
@@ -14,61 +14,86 @@
   </header>
 
   <div class="resumen-historial">
-    <app-tarjeta-resumen titulo="Consultas registradas" [valor]="totalRegistros" icono="+" color="azul" />
+    <app-tarjeta-resumen titulo="Atenciones registradas" [valor]="totalRegistros" icono="+" color="azul" />
     <app-tarjeta-resumen titulo="Mascotas atendidas" [valor]="mascotasAtendidas" icono="♥" color="turquesa" />
-    <app-tarjeta-resumen titulo="Última atención" [valor]="ultimaAtencion ? (ultimaAtencion | fechaLegible:'corta') : '—'"
-                         icono="◷" color="verde" />
+    <app-tarjeta-resumen titulo="Total cobrado" [valor]="totalCobrado | moneda" icono="S/" color="verde" />
   </div>
 
   <app-alerta tipo="danger" [mensaje]="error" (cerrar)="error = ''" />
 
+  <!-- ===================== REGISTRAR CONSULTA DESDE UNA CITA ===================== -->
   <section class="tarjeta-historial">
     <div class="titulo-seccion">
       <h2>Registrar consulta</h2>
-      <p>Los campos con * son obligatorios.</p>
+      <p>Selecciona la cita: los datos de la mascota, del dueño y del horario se cargan automáticamente.</p>
     </div>
 
-    @if (mascotas.length === 0) {
+    @if (citasPorAtender.length === 0) {
       <app-alerta tipo="warning" [cerrable]="false"
-                  mensaje="No hay mascotas registradas. Primero agrega una mascota en la sección Mascotas." />
+                  mensaje="No hay citas pendientes o confirmadas. Agenda una cita en la sección Citas para registrar su atención." />
     }
 
     <app-progreso-formulario [formulario]="formulario" />
 
     <form [formGroup]="formulario" (ngSubmit)="registrarConsulta()" novalidate>
       <div class="formulario-grid">
-        <div class="campo">
-          <label for="mascota">Mascota *</label>
-          <select id="mascota" formControlName="mascotaId" appValidacionVisual>
-            <option [ngValue]="0" disabled>Selecciona una mascota</option>
-            @for (mascota of mascotas; track mascota.id) {
-              <option [ngValue]="mascota.id">{{ mascota.nombre }} — {{ mascota.especie }}</option>
+        <div class="campo campo-completo">
+          <label for="cita">Cita a atender *</label>
+          <select id="cita" formControlName="citaId" appValidacionVisual>
+            <option [ngValue]="0" disabled>Selecciona una cita pendiente o confirmada</option>
+            @for (cita of citasPorAtender; track cita.id) {
+              <option [ngValue]="cita.id">
+                {{ cita.mascotaId | codigoMascota }} · {{ mascota(cita.mascotaId)?.nombre ?? 'Mascota' }} —
+                {{ cita.fecha | fechaLegible }} {{ cita.hora | rangoHorario }} — {{ cita.motivo }}
+              </option>
             }
           </select>
-          <app-error-campo [control]="c.mascotaId" etiqueta="La mascota" />
+          <app-error-campo [control]="c.citaId" etiqueta="La cita" />
         </div>
+      </div>
 
+      @if (citaSeleccionada; as cita) {
+        <div class="datos-cita">
+          <article>
+            <h3>🐾 Mascota</h3>
+            @if (mascotaDeCita; as m) {
+              <p><strong>{{ m.nombre }}</strong> <span class="badge text-bg-light border">{{ m.id | codigoMascota }}</span></p>
+              <p>{{ m.especie }} · {{ m.raza }} · {{ m.sexo }}</p>
+              <p>Edad: {{ m.fechaNacimiento | edadMascota }} · Peso: {{ m.peso }} kg</p>
+            } @else {
+              <p>Mascota no encontrada</p>
+            }
+          </article>
+          <article>
+            <h3>👤 Dueño</h3>
+            @if (duenoDeCita; as d) {
+              <p><strong>{{ d.nombres }} {{ d.apellidos }}</strong></p>
+              <p>DNI {{ d.dni }} · Cel. {{ d.telefono }}</p>
+              <p>{{ d.direccion }}</p>
+            } @else {
+              <p>Sin datos del dueño</p>
+            }
+          </article>
+          <article>
+            <h3>🗓️ Cita</h3>
+            <p><strong>{{ cita.motivo }}</strong> · {{ cita.costo | moneda }}</p>
+            <p>{{ cita.fecha | fechaLegible:'larga' }}</p>
+            <p>Horario {{ cita.hora | rangoHorario }} · {{ cita.veterinario }}</p>
+          </article>
+        </div>
+      }
+
+      <div class="formulario-grid">
         <div class="campo">
-          <label for="fecha">Fecha de consulta *</label>
+          <label for="fecha">Fecha de atención *</label>
           <input id="fecha" type="date" [max]="hoy" formControlName="fecha" appValidacionVisual>
           <app-error-campo [control]="c.fecha" etiqueta="La fecha" />
         </div>
 
         <div class="campo">
-          <label for="tipoConsulta">Tipo de consulta *</label>
-          <select id="tipoConsulta" formControlName="tipoConsulta" appValidacionVisual>
-            <option value="" disabled>Selecciona el tipo</option>
-            @for (tipo of tiposConsulta; track tipo) {
-              <option [value]="tipo">{{ tipo }}</option>
-            }
-          </select>
-          <app-error-campo [control]="c.tipoConsulta" etiqueta="El tipo de consulta" />
-        </div>
-
-        <div class="campo">
-          <label for="veterinario">Veterinario responsable *</label>
-          <input id="veterinario" formControlName="veterinario" appValidacionVisual placeholder="Nombre del veterinario">
-          <app-error-campo [control]="c.veterinario" etiqueta="El nombre del veterinario" />
+          <label>Servicio y veterinario</label>
+          <input type="text" readonly class="solo-lectura"
+                 [value]="citaSeleccionada ? citaSeleccionada.motivo + ' · ' + citaSeleccionada.veterinario : 'Se completa al elegir la cita'">
         </div>
 
         <div class="campo campo-completo">
@@ -94,71 +119,77 @@
       </div>
 
       <div class="acciones">
-        <button type="submit" [disabled]="formulario.invalid || mascotas.length === 0">
+        <button type="submit" [disabled]="formulario.invalid || citasPorAtender.length === 0">
           Guardar registro clínico
         </button>
       </div>
     </form>
   </section>
 
+  <!-- ===================== TABLA DE ATENCIONES CON BUSCADOR ===================== -->
   <section class="tarjeta-historial">
     <div class="titulo-seccion">
-      <h2>Registros clínicos</h2>
-      <p>Consulta los antecedentes médicos de cada mascota en orden cronológico.</p>
+      <h2>Historial de atenciones</h2>
+      <p>Busca por código de la mascota (por ejemplo MAS-0001) o por su nombre.</p>
     </div>
 
-    <div class="campo filtro-historial">
-      <label for="filtroMascota">Filtrar historial por mascota</label>
-      <select id="filtroMascota" [formControl]="filtroMascota">
-        <option [ngValue]="null">Todas las mascotas</option>
-        @for (mascota of mascotas; track mascota.id) {
-          <option [ngValue]="mascota.id">{{ mascota.nombre }} — {{ mascota.especie }}</option>
-        }
-      </select>
+    <div class="campo buscador-historial">
+      <label for="buscar">Buscar mascota</label>
+      <input id="buscar" type="search" [formControl]="busqueda" placeholder="MAS-0001 o nombre de la mascota">
     </div>
 
-    @if (mascotaSeleccionada; as m) {
+    @if (mascotaBuscada; as m) {
       <div class="ficha-mascota">
+        <span class="badge text-bg-primary">{{ m.id | codigoMascota }}</span>
         <strong>{{ m.nombre }}</strong>
         <span>{{ m.especie }} · {{ m.raza }} · {{ m.sexo }}</span>
         <span>Edad: {{ m.fechaNacimiento | edadMascota }}</span>
-        <span>Peso: {{ m.peso }} kg</span>
+        <span>Dueño: {{ dueno(m.duenoId)?.nombres }} {{ dueno(m.duenoId)?.apellidos }}</span>
+        <span>{{ totalRegistros }} atención(es)</span>
       </div>
     }
 
-    @if (registrosFiltrados.length === 0) {
+    @if (filas.length === 0) {
       <div class="sin-registros">
-        <h3>Sin registros clínicos</h3>
-        <p>No hay consultas registradas para la selección actual.</p>
+        <h3>Sin atenciones registradas</h3>
+        <p>{{ busqueda.value ? 'No hay atenciones para "' + busqueda.value + '".' : 'Las atenciones que registres aparecerán aquí.' }}</p>
       </div>
     } @else {
-      <div class="lista-registros timeline">
-        @for (registro of registrosFiltrados; track registro.id) {
-          <article class="registro">
-            <div class="registro-cabecera">
-              <div>
-                <span class="tipo">{{ registro.tipoConsulta }}</span>
-                <h3>{{ obtenerNombreMascota(registro.mascotaId) }}</h3>
-                <p class="fecha">{{ registro.fecha | fechaLegible:'larga' }}</p>
-              </div>
-
-              <button class="boton-eliminar" type="button" (click)="eliminarRegistro(registro)">
-                Eliminar
-              </button>
-            </div>
-
-            <div class="detalle-registro">
-              <p><strong>Veterinario:</strong> {{ registro.veterinario }}</p>
-              <p><strong>Diagnóstico:</strong> {{ registro.diagnostico }}</p>
-              @if (registro.tratamiento) {
-                <p><strong>Tratamiento:</strong> {{ registro.tratamiento }}</p>
-              }
-              @if (registro.observaciones) {
-                <p><strong>Observaciones:</strong> {{ registro.observaciones }}</p>
-              }
-            </div>
-          </article>
-        }
+      <div class="tabla-contenedor">
+        <table class="tabla-historial">
+          <thead>
+            <tr>
+              <th>Código</th>
+              <th>Mascota</th>
+              <th>Dueño</th>
+              <th>Fecha</th>
+              <th>Servicio</th>
+              <th>Veterinario</th>
+              <th>Diagnóstico</th>
+              <th>Tratamiento</th>
+              <th>Costo</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (fila of filas; track fila.registro.id) {
+              <tr>
+                <td><span class="badge text-bg-light border">{{ fila.registro.mascotaId | codigoMascota }}</span></td>
+                <td><strong>{{ fila.mascota?.nombre ?? 'Mascota eliminada' }}</strong></td>
+                <td>{{ fila.dueno ? fila.dueno.nombres + ' ' + fila.dueno.apellidos : '—' }}</td>
+                <td class="text-nowrap">{{ fila.registro.fecha | fechaLegible:'corta' }}</td>
+                <td><span class="tipo">{{ fila.registro.tipoConsulta }}</span></td>
+                <td>{{ fila.registro.veterinario }}</td>
+                <td class="texto-largo">{{ fila.registro.diagnostico }}</td>
+                <td class="texto-largo">{{ fila.registro.tratamiento || '—' }}</td>
+                <td class="text-nowrap">{{ fila.registro.costo | moneda }}</td>
+                <td>
+                  <button class="boton-eliminar" type="button" (click)="eliminarRegistro(fila.registro)">Eliminar</button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
       </div>
     }
   </section>

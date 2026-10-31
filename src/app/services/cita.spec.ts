@@ -3,7 +3,7 @@ import { Cita } from '../models/cita';
 import { CitaService } from './cita';
 
 const base: Omit<Cita, 'id'> = {
-  mascotaId: 1, fecha: '2099-01-10', hora: '10:00', motivo: 'Vacuna',
+  mascotaId: 1, fecha: '2099-01-10', hora: '10:00', motivo: 'Vacuna', costo: 50,
   veterinario: 'Dra. Paz', estado: 'Pendiente', observaciones: ''
 };
 

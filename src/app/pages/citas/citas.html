@@ -5,7 +5,7 @@
       <h1>Agenda de citas</h1>
       <p class="descripcion">
         Organiza las consultas y brinda una atención oportuna a cada mascota.
-        Horario de atención: {{ apertura }} a {{ cierre }}.
+        Horarios de atención en bloques de 30 minutos, de 08:00 a 20:00.
       </p>
     </div>
 
@@ -65,37 +65,67 @@
         </div>
 
         <div class="campo">
-          <label for="hora">Hora *</label>
-          <input id="hora" type="time" [min]="apertura" [max]="cierre" step="900"
-                 formControlName="hora" appValidacionVisual
-                 [class.is-invalid]="!!errorHorario">
-          <app-error-campo [control]="c.hora" etiqueta="La hora" />
+          <label for="hora">Horario *</label>
+          <select id="hora" formControlName="hora" appValidacionVisual [class.is-invalid]="!!errorHorario">
+            <option value="" disabled>Selecciona un horario ({{ horariosLibres }} libres)</option>
+            @for (bloque of horarios; track bloque.hora) {
+              <option [value]="bloque.hora" [disabled]="bloque.estado !== 'libre'">
+                {{ bloque.hora | rangoHorario }}{{ bloque.estado === 'ocupado' ? ' · ocupado' : bloque.estado === 'pasado' ? ' · ya pasó' : '' }}
+              </option>
+            }
+          </select>
+          <app-error-campo [control]="c.hora" etiqueta="El horario" />
           @if (errorHorario) {
             <div class="invalid-feedback d-block">{{ errorHorario }}</div>
           } @else if (horarioLibre) {
-            <div class="valid-feedback d-block">✔ Horario disponible</div>
+            <div class="valid-feedback d-block">✔ Horario disponible: {{ c.hora.value | rangoHorario }}</div>
           }
         </div>
 
         <div class="campo">
-          <label for="motivo">Motivo de consulta *</label>
-          <input id="motivo" type="text" formControlName="motivo" appValidacionVisual
-                 placeholder="Ej. Vacunación, control o revisión">
-          <app-error-campo [control]="c.motivo" etiqueta="El motivo" />
+          <label for="motivo">Servicio / motivo *</label>
+          <select id="motivo" formControlName="motivo" appValidacionVisual>
+            <option value="" disabled>Selecciona el servicio</option>
+            @for (servicio of servicios; track servicio.nombre) {
+              <option [value]="servicio.nombre">{{ servicio.nombre }} — {{ servicio.costo | moneda }}</option>
+            }
+          </select>
+          <app-error-campo [control]="c.motivo" etiqueta="El servicio" />
         </div>
 
         <div class="campo campo-completo">
-          <span class="etiqueta-ocupadas">Horas ocupadas el {{ c.fecha.value | fechaLegible }}:</span>
-          <div class="horas-ocupadas">
-            @for (hora of horasOcupadas; track hora) {
-              <span class="badge rounded-pill text-bg-danger">{{ hora }}</span>
-            } @empty {
-              <span class="badge rounded-pill text-bg-success">Todo el día disponible</span>
+          <span class="etiqueta-ocupadas">
+            Horarios del {{ c.fecha.value | fechaLegible }} ·
+            <span class="text-success">{{ horariosLibres }} libres</span>
+          </span>
+          <div class="grilla-horarios" role="group" aria-label="Disponibilidad de horarios">
+            @for (bloque of horarios; track bloque.hora) {
+              <button type="button" class="bloque {{ bloque.estado }}"
+                      [class.elegido]="c.hora.value === bloque.hora"
+                      [disabled]="bloque.estado !== 'libre'"
+                      [attr.title]="bloque.estado === 'libre' ? 'Disponible' : bloque.estado === 'ocupado' ? 'Ocupado' : 'Horario pasado'"
+                      (click)="seleccionarHora(bloque)">
+                {{ bloque.hora }}
+              </button>
             }
+          </div>
+          <div class="leyenda mt-1 mb-0">
+            <span><i class="muestra libre"></i> Libre</span>
+            <span><i class="muestra ocupado"></i> Ocupado</span>
+            <span><i class="muestra pasado"></i> Ya pasó</span>
           </div>
         </div>
 
-        <div class="campo campo-completo">
+        <div class="campo">
+          <label for="costo">Costo (S/) *</label>
+          <input id="costo" type="number" min="1" step="0.5" formControlName="costo" appValidacionVisual>
+          <app-error-campo [control]="c.costo" etiqueta="El costo" />
+          @if (c.motivo.value) {
+            <small class="ayuda-campo">Tarifa de {{ c.motivo.value }}: {{ c.costo.value | moneda }}</small>
+          }
+        </div>
+
+        <div class="campo">
           <label for="veterinario">Veterinario responsable *</label>
           <input id="veterinario" type="text" formControlName="veterinario" appValidacionVisual
                  placeholder="Nombre del veterinario">
@@ -153,8 +183,9 @@
           <thead>
             <tr>
               <th>Mascota</th>
-              <th>Fecha y hora</th>
-              <th>Motivo</th>
+              <th>Fecha y horario</th>
+              <th>Servicio</th>
+              <th>Costo</th>
               <th>Veterinario</th>
               <th>Estado</th>
               <th>Acciones</th>
@@ -167,13 +198,14 @@
                 <td>
                   {{ cita.fecha | fechaLegible }}
                   <span class="hora">
-                    {{ cita.hora }}
+                    {{ cita.hora | rangoHorario }}
                     @if (cita.estado === 'Pendiente' || cita.estado === 'Confirmada') {
                       · {{ cita.fecha | tiempoRestante:cita.hora }}
                     }
                   </span>
                 </td>
                 <td>{{ cita.motivo }}</td>
+                <td class="text-nowrap">{{ cita.costo | moneda }}</td>
                 <td>{{ cita.veterinario }}</td>
                 <td>
                   <span [class]="cita.estado | estadoCita:'clase'">{{ cita.estado | estadoCita }}</span>

@@ -48,12 +48,17 @@ export class ProgresoFormulario {
     inject(DestroyRef).onDestroy(() => this.suscripcion?.unsubscribe());
   }
 
+  /** Solo se cuentan los controles habilitados (un campo condicional deshabilitado no suma). */
+  private get habilitados() {
+    return Object.values(this.formulario.controls).filter(control => control.enabled);
+  }
+
   get total(): number {
-    return Object.keys(this.formulario.controls).length;
+    return this.habilitados.length;
   }
 
   get validos(): number {
-    return Object.values(this.formulario.controls).filter(control => control.valid).length;
+    return this.habilitados.filter(control => control.valid).length;
   }
 
   get porcentaje(): number {

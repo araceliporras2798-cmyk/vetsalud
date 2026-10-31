@@ -3,6 +3,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, FormControl, Validators } from '@angular/forms';
 import { Cita } from '../../models/cita';
 import { Mascota } from '../../models/mascota';
+import { HORARIOS, SERVICIOS, tarifaDe } from '../../models/servicio';
 import { CitaService } from '../../services/cita';
 import { MascotaService } from '../../services/mascota';
 import {
@@ -11,7 +12,9 @@ import {
   FORMULARIO_SHARED,
   FechaLegiblePipe,
   FechaUtil,
+  MonedaPipe,
   NotificacionService,
+  RangoHorarioPipe,
   ResaltarCitaProximaDirective,
   TarjetaResumen,
   TiempoRestantePipe,
@@ -19,6 +22,13 @@ import {
 } from '../../shared';
 
 type FiltroEstado = Cita['estado'] | 'Todas';
+
+export type EstadoHorario = 'libre' | 'ocupado' | 'pasado';
+
+export interface BloqueHorario {
+  hora: string;
+  estado: EstadoHorario;
+}
 
 @Component({
   selector: 'app-citas',
@@ -28,6 +38,8 @@ type FiltroEstado = Cita['estado'] | 'Todas';
     FechaLegiblePipe,
     EstadoCitaPipe,
     TiempoRestantePipe,
+    MonedaPipe,
+    RangoHorarioPipe,
     ResaltarCitaProximaDirective,
     TarjetaResumen
   ],
@@ -43,16 +55,18 @@ export class Citas implements OnInit {
   private readonly notificacion = inject(NotificacionService);
   private readonly cdr = inject(ChangeDetectorRef);
 
-  static readonly APERTURA = '08:00';
-  static readonly CIERRE = '20:00';
+  static readonly APERTURA = HORARIOS[0];
+  static readonly CIERRE = HORARIOS[HORARIOS.length - 1];
 
   readonly apertura = Citas.APERTURA;
   readonly cierre = Citas.CIERRE;
   readonly estados: Cita['estado'][] = ['Pendiente', 'Confirmada', 'Atendida', 'Cancelada'];
+  readonly servicios = SERVICIOS;
 
   mascotas: Mascota[] = [];
   citas: Cita[] = [];
-  horasOcupadas: string[] = [];
+  /** Bloques de horario del día elegido con su estado (libre, ocupado o pasado). */
+  horarios: BloqueHorario[] = [];
   error = '';
 
   readonly filtroEstado = new FormControl<FiltroEstado>('Todas', { nonNullable: true });
@@ -67,7 +81,8 @@ export class Citas implements OnInit {
       mascotaId: [0, [Validators.required, Validators.min(1)]],
       fecha: [FechaUtil.hoyISO(), [Validators.required, VetValidators.fechaNoPasada]],
       hora: ['', [Validators.required, VetValidators.horarioAtencion(Citas.APERTURA, Citas.CIERRE)]],
-      motivo: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(80), VetValidators.noSoloEspacios]],
+      motivo: ['', Validators.required],
+      costo: [0, [Validators.required, Validators.min(1), Validators.max(5000)]],
       veterinario: ['', [Validators.required, Validators.minLength(3), VetValidators.soloLetras]],
       observaciones: ['', Validators.maxLength(250)]
     },
@@ -83,12 +98,17 @@ export class Citas implements OnInit {
   ngOnInit(): void {
     this.cargarDatos();
 
-    // Control de estado: cada vez que cambia la fecha se recalculan las horas ocupadas.
+    // Control de estado: cada vez que cambia la fecha se recalcula la disponibilidad de horarios.
     this.c.fecha.valueChanges
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(fecha => this.actualizarHorasOcupadas(fecha));
+      .subscribe(fecha => this.actualizarHorarios(fecha));
 
-    this.actualizarHorasOcupadas(this.c.fecha.value);
+    // Al elegir el servicio se completa automáticamente su tarifa.
+    this.c.motivo.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(servicio => this.c.costo.setValue(tarifaDe(servicio)));
+
+    this.actualizarHorarios(this.c.fecha.value);
   }
 
   get fechaMinima(): string {
@@ -126,6 +146,10 @@ export class Citas implements OnInit {
     return !!this.c.fecha.value && this.c.hora.valid && !this.formulario.errors;
   }
 
+  get horariosLibres(): number {
+    return this.horarios.filter(h => h.estado === 'libre').length;
+  }
+
   cargarDatos(): void {
     this.mascotas = this.mascotaService.obtenerMascotas();
     this.cargarCitas();
@@ -135,15 +159,26 @@ export class Citas implements OnInit {
     this.citas = this.citaService.obtenerCitasOrdenadas();
   }
 
-  private actualizarHorasOcupadas(fecha: string): void {
-    this.horasOcupadas = this.citas
-      .filter(c => c.fecha === fecha && c.estado !== 'Cancelada')
-      .map(c => c.hora)
-      .sort();
+  private actualizarHorarios(fecha: string): void {
+    this.horarios = HORARIOS.map(hora => {
+      const horas = FechaUtil.horasHasta(fecha, hora);
+      const estado: EstadoHorario =
+        horas !== null && horas < 0 ? 'pasado'
+        : this.citaService.estaDisponible(fecha, hora) ? 'libre'
+        : 'ocupado';
+      return { hora, estado };
+    });
+
+    // Si la hora elegida dejó de estar libre, se limpia la selección.
+    const elegida = this.horarios.find(h => h.hora === this.c.hora.value);
+    if (elegida && elegida.estado !== 'libre') {
+      this.c.hora.setValue('');
+    }
   }
 
-  seleccionarHora(hora: string): void {
-    this.c.hora.setValue(hora);
+  seleccionarHora(bloque: BloqueHorario): void {
+    if (bloque.estado !== 'libre') return;
+    this.c.hora.setValue(bloque.hora);
     this.c.hora.markAsTouched();
   }
 
@@ -162,7 +197,7 @@ export class Citas implements OnInit {
       this.citaService.agendarCita({
         ...datos,
         mascotaId: Number(datos.mascotaId),
-        motivo: datos.motivo.trim(),
+        costo: Number(datos.costo),
         veterinario: datos.veterinario.trim(),
         observaciones: datos.observaciones.trim(),
         estado: 'Pendiente'
@@ -170,9 +205,9 @@ export class Citas implements OnInit {
 
       this.cargarCitas();
       this.formulario.reset();
-      this.actualizarHorasOcupadas(this.c.fecha.value);
+      this.actualizarHorarios(this.c.fecha.value);
       this.notificacion.exito(
-        `${this.obtenerNombreMascota(Number(datos.mascotaId))} · ${datos.fecha} a las ${datos.hora}.`,
+        `${this.obtenerNombreMascota(Number(datos.mascotaId))} · ${datos.motivo} · ${datos.fecha} a las ${datos.hora}.`,
         'Cita agendada'
       );
     } catch (e: unknown) {
@@ -187,7 +222,7 @@ export class Citas implements OnInit {
   cambiarEstado(cita: Cita, estado: Cita['estado']): void {
     if (this.citaService.cambiarEstado(cita.id, estado)) {
       this.cargarCitas();
-      this.actualizarHorasOcupadas(this.c.fecha.value);
+      this.actualizarHorarios(this.c.fecha.value);
       this.formulario.updateValueAndValidity();
       this.notificacion.mostrar('info', `La cita de ${this.obtenerNombreMascota(cita.mascotaId)} ahora está "${estado}".`, 'Estado actualizado');
       this.error = '';
@@ -209,7 +244,7 @@ export class Citas implements OnInit {
     try {
       if (this.citaService.eliminarCita(cita.id)) {
         this.cargarCitas();
-        this.actualizarHorasOcupadas(this.c.fecha.value);
+        this.actualizarHorarios(this.c.fecha.value);
         this.formulario.updateValueAndValidity();
         this.notificacion.exito('Cita eliminada de la agenda.');
       }

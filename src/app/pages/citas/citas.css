@@ -528,3 +528,32 @@ td .selector-estado {
     flex-wrap: wrap;
   }
 }
+
+/* Grilla de horarios predefinidos */
+.grilla-horarios {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(78px, 1fr));
+  gap: 8px;
+}
+
+.bloque {
+  padding: 8px 4px;
+  border: 1px solid #b9e3c9;
+  border-radius: 9px;
+  background: #effaf3;
+  color: #1c7a45;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.bloque.libre:hover { transform: translateY(-1px); box-shadow: 0 3px 8px rgb(28 122 69 / 15%); }
+.bloque.ocupado { border-color: #f1c0c0; background: #fdeeee; color: #b42318; text-decoration: line-through; cursor: not-allowed; }
+.bloque.pasado { border-color: #e2e8f0; background: #f4f6f8; color: #9aa8b5; cursor: not-allowed; }
+.bloque.elegido { border-color: #174a7e; background: #174a7e; color: #fff; }
+
+.muestra.libre { background: #effaf3; border-left: 4px solid #1c7a45; }
+.muestra.ocupado { background: #fdeeee; border-left: 4px solid #b42318; }
+.muestra.pasado { background: #f4f6f8; border-left: 4px solid #9aa8b5; }
