@@ -49,6 +49,22 @@
       <p class="sin-citas">No hay citas pendientes. <a routerLink="/citas">Agenda una nueva cita</a>.</p>
     }
   </article>
+
+  <article class="proximas ultimos">
+    <div class="proximas-titulo">
+      <h3>Últimos registros</h3>
+      <span class="badge rounded-pill text-bg-light border">Datos guardados en el navegador</span>
+    </div>
+    <ul class="lista-ultimos">
+      @for (item of ultimosRegistros; track item.entidad) {
+        <li>
+          <span class="entidad">{{ item.entidad }}</span>
+          <span class="descripcion">{{ item.descripcion }}</span>
+          <span class="badge rounded-pill text-bg-primary">{{ item.total }}</span>
+        </li>
+      }
+    </ul>
+  </article>
 </section>
 
 <section class="resumen">

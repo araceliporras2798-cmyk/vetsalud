@@ -1,14 +1,16 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { FormBuilder, FormControl, Validators } from '@angular/forms';
 import { RegistroClinico } from '../../models/historial';
 import { Mascota } from '../../models/mascota';
 import { HistorialService } from '../../services/historial';
 import { MascotaService } from '../../services/mascota';
 import {
+  ConfirmacionService,
   EdadMascotaPipe,
   FORMULARIO_SHARED,
   FechaLegiblePipe,
   FechaUtil,
+  NotificacionService,
   TarjetaResumen,
   VetValidators
 } from '../../shared';
@@ -24,6 +26,9 @@ export class Historial implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly historialService = inject(HistorialService);
   private readonly mascotaService = inject(MascotaService);
+  private readonly confirmacion = inject(ConfirmacionService);
+  private readonly notificacion = inject(NotificacionService);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   readonly tiposConsulta = [
     'Consulta general', 'Vacunación', 'Desparasitación',
@@ -34,7 +39,6 @@ export class Historial implements OnInit {
 
   mascotas: Mascota[] = [];
   registros: RegistroClinico[] = [];
-  mensaje = '';
   error = '';
 
   /** Filtro del timeline: null = todas las mascotas. */
@@ -89,7 +93,6 @@ export class Historial implements OnInit {
   }
 
   registrarConsulta(): void {
-    this.mensaje = '';
     this.error = '';
 
     if (this.formulario.invalid) {
@@ -112,21 +115,24 @@ export class Historial implements OnInit {
 
       this.actualizarRegistros();
       this.formulario.reset();
-      this.mensaje = 'Consulta registrada correctamente.';
+      this.notificacion.exito(`Se agregó al historial de ${this.obtenerNombreMascota(Number(datos.mascotaId))}.`, 'Consulta registrada');
     } catch {
       this.error = 'No se pudo registrar la consulta.';
     }
   }
 
-  eliminarRegistro(registro: RegistroClinico): void {
-    if (!confirm('¿Eliminar este registro clínico?')) {
-      return;
-    }
+  async eliminarRegistro(registro: RegistroClinico): Promise<void> {
+    const confirmado = await this.confirmacion.confirmar({
+      titulo: 'Eliminar registro clínico',
+      mensaje: `¿Eliminar "${this.historialService.describir(registro)}" de ${this.obtenerNombreMascota(registro.mascotaId)}?`,
+      detalle: 'El historial clínico es información sensible: elimina solo registros ingresados por error.',
+      textoConfirmar: 'Sí, eliminar'
+    });
 
-    if (this.historialService.eliminar(registro.id)) {
+    if (confirmado && this.historialService.eliminar(registro.id)) {
       this.actualizarRegistros();
-      this.mensaje = 'Registro eliminado correctamente.';
-      this.error = '';
+      this.notificacion.exito('Registro eliminado del historial.');
+      this.cdr.markForCheck();
     }
   }
 }

@@ -11,7 +11,6 @@
   <h3>Datos del propietario</h3>
   <p class="descripcion">Completa los campos para registrar un nuevo dueño. Los campos con * son obligatorios.</p>
 
-  <app-alerta tipo="success" [mensaje]="mensaje" (cerrar)="mensaje = ''" />
   <app-alerta tipo="danger" [mensaje]="error" (cerrar)="error = ''" />
 
   <app-progreso-formulario [formulario]="formulario" />
@@ -97,7 +96,7 @@
               <td>{{ dueno.telefono }}</td>
               <td>{{ dueno.correo || 'No indicado' }}</td>
               <td>
-                <button class="boton-eliminar" type="button" (click)="eliminarDueno(dueno.id)">
+                <button class="boton-eliminar" type="button" (click)="eliminarDueno(dueno)">
                   Eliminar
                 </button>
               </td>

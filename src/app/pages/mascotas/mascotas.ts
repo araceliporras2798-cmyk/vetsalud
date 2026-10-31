@@ -1,8 +1,15 @@
-import { Component, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, inject } from '@angular/core';
 import { FormBuilder, FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Dueno, Mascota } from '../../models/mascota';
 import { MascotaService } from '../../services/mascota';
-import { EdadMascotaPipe, FORMULARIO_SHARED, FechaUtil, VetValidators } from '../../shared';
+import {
+  ConfirmacionService,
+  EdadMascotaPipe,
+  FORMULARIO_SHARED,
+  FechaUtil,
+  NotificacionService,
+  VetValidators
+} from '../../shared';
 
 @Component({
   selector: 'app-mascotas',
@@ -14,6 +21,9 @@ import { EdadMascotaPipe, FORMULARIO_SHARED, FechaUtil, VetValidators } from '..
 export class Mascotas {
   private readonly fb = inject(FormBuilder);
   private readonly mascotaService = inject(MascotaService);
+  private readonly confirmacion = inject(ConfirmacionService);
+  private readonly notificacion = inject(NotificacionService);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   readonly especies = ['Perro', 'Gato', 'Ave', 'Conejo', 'Otro'] as const;
   readonly hoy = FechaUtil.hoyISO();
@@ -21,7 +31,6 @@ export class Mascotas {
   mostrarFormulario = false;
   duenos: Dueno[] = [];
   mascotas: Mascota[] = [];
-  mensaje = '';
   error = '';
 
   /** Buscador como FormControl independiente (estado reactivo del listado). */
@@ -67,7 +76,6 @@ export class Mascotas {
   }
 
   registrarMascota(): void {
-    this.mensaje = '';
     this.error = '';
 
     if (this.formulario.invalid) {
@@ -92,21 +100,24 @@ export class Mascotas {
       this.actualizarDatos();
       this.formulario.reset();
       this.mostrarFormulario = false;
-      this.mensaje = 'Mascota registrada correctamente.';
+      this.notificacion.exito(`${datos.nombre.trim()} ya forma parte de los pacientes.`, 'Mascota registrada');
     } catch (e) {
       this.error = e instanceof Error ? e.message : 'No se pudo registrar la mascota.';
     }
   }
 
-  eliminarMascota(mascota: Mascota): void {
-    if (!confirm(`¿Eliminar a ${mascota.nombre} del registro?`)) {
-      return;
-    }
+  async eliminarMascota(mascota: Mascota): Promise<void> {
+    const confirmado = await this.confirmacion.confirmar({
+      titulo: 'Eliminar mascota',
+      mensaje: `¿Deseas eliminar a ${this.mascotaService.describir(mascota)}?`,
+      detalle: 'Sus citas e historial clínico quedarán sin paciente asociado.',
+      textoConfirmar: 'Sí, eliminar'
+    });
 
-    if (this.mascotaService.eliminarMascota(mascota.id)) {
+    if (confirmado && this.mascotaService.eliminarMascota(mascota.id)) {
       this.actualizarDatos();
-      this.mensaje = 'Mascota eliminada correctamente.';
-      this.error = '';
+      this.notificacion.exito('Mascota eliminada correctamente.');
+      this.cdr.markForCheck();
     }
   }
 }

@@ -1,21 +1,12 @@
-
-import { Component, signal } from '@angular/core';
-import {
-  RouterOutlet,
-  RouterLink,
-  RouterLinkActive
-} from '@angular/router';
+import { Component } from '@angular/core';
+import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { ContenedorToasts } from './shared/components/contenedor-toasts/contenedor-toasts';
+import { DialogoConfirmacion } from './shared/components/dialogo-confirmacion/dialogo-confirmacion';
 
 @Component({
   selector: 'app-root',
-  imports: [
-    RouterOutlet,
-    RouterLink,
-    RouterLinkActive
-  ],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, DialogoConfirmacion, ContenedorToasts],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
-export class App {
-  protected readonly title = signal('vetsalud');
-}
+export class App {}

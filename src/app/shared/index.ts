@@ -29,3 +29,8 @@ export const FORMULARIO_SHARED = [
   SoloNumerosDirective,
   ValidacionVisualDirective
 ] as const;
+
+export * from './services/confirmacion.service';
+export * from './services/notificacion.service';
+export * from './components/dialogo-confirmacion/dialogo-confirmacion';
+export * from './components/contenedor-toasts/contenedor-toasts';

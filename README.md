@@ -86,21 +86,23 @@ npx ng test --watch=false                         # una sola ejecución
 npx ng test --watch=false --reporters=verbose     # detalle de cada prueba
 ```
 
-Resultado actual: **12 archivos de prueba, 31 pruebas aprobadas.**
+Resultado actual: **14 archivos de prueba, 37 pruebas aprobadas.**
 
 | Archivo | Qué se prueba |
 |---|---|
 | `shared/pipes/pipes.spec.ts` | `fechaLegible`, `estadoCita`, `edadMascota`, `tiempoRestante` |
 | `shared/directives/directivas.spec.ts` | Resaltado de citas, campo solo numérico y clases `is-valid`/`is-invalid` |
 | `shared/validators/vetsalud.validators.spec.ts` | DNI, celular, letras, fechas, horario de atención y horario disponible |
+| `services/base/repositorio-local.spec.ts` | Herencia (los 4 servicios son `RepositorioLocal`), polimorfismo de `describir()` y reglas sobrescritas |
+| `shared/services/servicios-ui.spec.ts` | Modal de confirmación (`Promise<boolean>`) y toasts |
 | `services/*.spec.ts` | Registro, búsqueda, horario ocupado, cancelación que libera horario, orden de citas |
 | `pages/citas/citas.spec.ts` | Formulario reactivo: error de grupo `horarioOcupado` y `fueraDeHorario` |
 | `pages/duenos/duenos.spec.ts` | Validaciones del formulario y DNI duplicado |
 | `pages/*/*.spec.ts`, `app.spec.ts` | Creación de cada componente y menú principal |
 
 ```
- Test Files  12 passed (12)
-      Tests  31 passed (31)
+ Test Files  14 passed (14)
+      Tests  37 passed (37)
 ```
 
 ## 7. Estructura del proyecto
@@ -108,7 +110,9 @@ Resultado actual: **12 archivos de prueba, 31 pruebas aprobadas.**
 ```
 src/app/
 ├── models/                 Interfaces: Dueno, Mascota, Cita, RegistroClinico
-├── services/               MascotaService, CitaService, HistorialService (localStorage)
+├── services/               Servicios de datos (localStorage)
+│   ├── base/               RepositorioLocal<T>: clase abstracta genérica
+│   └── dueno, mascota, cita, historial   → heredan de RepositorioLocal
 ├── pages/                  Componentes de cada funcionalidad (rutas)
 │   ├── dashboard/          Inicio con indicadores y próximas citas
 │   ├── duenos/             Registro de propietarios
@@ -119,14 +123,28 @@ src/app/
 │   ├── pipes/              fechaLegible, estadoCita, edadMascota, tiempoRestante
 │   ├── directives/         appResaltarCitaProxima, appSoloNumeros, appValidacionVisual
 │   ├── validators/         VetValidators (validadores personalizados de ReactiveForms)
-│   ├── components/         app-alerta, app-error-campo, app-progreso-formulario, app-tarjeta-resumen
+│   ├── components/         app-alerta, app-error-campo, app-progreso-formulario, app-tarjeta-resumen,
+│   │                       app-dialogo-confirmacion (modal), app-contenedor-toasts
+│   ├── services/           ConfirmacionService, NotificacionService (signals)
 │   ├── utils/              FechaUtil (manejo de fechas en hora local)
 │   └── index.ts            Barrel de exportación + FORMULARIO_SHARED
-├── app.routes.ts           Rutas: '', duenos, mascotas, citas, historial
+├── app.routes.ts           Rutas con carga diferida (loadComponent): '', duenos, mascotas, citas, historial
 └── app.config.ts           Configuración (router, listeners de errores)
 ```
 
 ## 8. Elementos de Angular implementados
+
+### POO: herencia y polimorfismo
+- `RepositorioLocal<T extends Entidad>` es una **clase abstracta genérica** con la lógica común (cargar y guardar en localStorage, generar ids, listar, actualizar, eliminar).
+- `DuenoService`, `MascotaService`, `CitaService` e `HistorialService` la **heredan** (`extends`) y **sobrescriben** (`override`) `describir()`, `validar()` y `validarEliminacion()` (patrón Template Method). Por ejemplo, no se repite un DNI, no se agenda en un horario ocupado y no se elimina una cita atendida.
+- El Dashboard recorre los 4 servicios como `RepositorioLocal<Entidad>[]` y llama a `describir()`: **polimorfismo** visible en la sección “Últimos registros”.
+
+### Bootstrap avanzado: modal y toasts
+- `<app-dialogo-confirmacion>` reemplaza a `confirm()` con un modal de Bootstrap. `ConfirmacionService.confirmar()` devuelve `Promise<boolean>`, se cierra con Esc o con clic fuera y pone el foco en el botón principal.
+- `<app-contenedor-toasts>` muestra notificaciones de éxito o error (`NotificacionService`) que se cierran solas.
+
+### Carga diferida (lazy loading)
+Cada módulo se carga con `loadComponent` solo al entrar a su ruta: el paquete inicial bajó de 621 kB a 489 kB y `ng build` genera un archivo por módulo.
 
 ### Pipes personalizados
 | Pipe | Ejemplo | Resultado |

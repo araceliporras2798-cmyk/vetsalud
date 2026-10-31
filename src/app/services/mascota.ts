@@ -1,62 +1,35 @@
-
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Dueno, Mascota } from '../models/mascota';
+import { RepositorioLocal } from './base/repositorio-local';
+import { DuenoService } from './dueno';
 
+/**
+ * Servicio de mascotas: hereda de RepositorioLocal<Mascota>.
+ * Usa DuenoService (composición) para validar que el dueño exista.
+ */
 @Injectable({
   providedIn: 'root'
 })
-export class MascotaService {
+export class MascotaService extends RepositorioLocal<Mascota> {
+  protected readonly clave = 'vetsalud_mascotas';
+  readonly nombreEntidad = 'mascota';
 
-  private readonly claveDuenos = 'vetsalud_duenos';
-  private readonly claveMascotas = 'vetsalud_mascotas';
+  private readonly duenoService = inject(DuenoService);
 
-  private duenos: Dueno[] = this.cargarDatos<Dueno>(
-    this.claveDuenos
-  );
+  override describir(mascota: Mascota): string {
+    return `${mascota.nombre} (${mascota.especie}, ${mascota.raza})`;
+  }
 
-  private mascotas: Mascota[] = this.cargarDatos<Mascota>(
-    this.claveMascotas
-  );
-
-  private siguienteDuenoId = this.obtenerSiguienteId(this.duenos);
-  private siguienteMascotaId = this.obtenerSiguienteId(this.mascotas);
-
-  private cargarDatos<T>(clave: string): T[] {
-    try {
-      const datos = localStorage.getItem(clave);
-
-      if (!datos) {
-        return [];
-      }
-
-      const resultado: unknown = JSON.parse(datos);
-
-      return Array.isArray(resultado) ? resultado as T[] : [];
-    } catch {
-      return [];
+  /** Regla propia: la mascota debe pertenecer a un dueño registrado. */
+  protected override validar(datos: Omit<Mascota, 'id'>): void {
+    if (!this.duenoService.buscarPorId(datos.duenoId)) {
+      throw new Error('Debes registrar al dueño antes que a su mascota.');
     }
   }
 
-  private guardarDatos(): void {
-    localStorage.setItem(this.claveDuenos, JSON.stringify(this.duenos));
-    localStorage.setItem(this.claveMascotas, JSON.stringify(this.mascotas));
-  }
-
-  private obtenerSiguienteId<T extends { id: number }>(
-    registros: T[]
-  ): number {
-    return registros.reduce(
-      (mayor, registro) => Math.max(mayor, registro.id),
-      0
-    ) + 1;
-  }
-
-  obtenerDuenos(): Dueno[] {
-    return this.duenos.map(dueno => ({ ...dueno }));
-  }
-
+  // ---------- Mascotas
   obtenerMascotas(): Mascota[] {
-    return this.mascotas.map(mascota => ({ ...mascota }));
+    return this.obtenerTodos();
   }
 
   buscarMascotas(termino: string): Mascota[] {
@@ -66,84 +39,34 @@ export class MascotaService {
       return this.obtenerMascotas();
     }
 
-    return this.mascotas.filter(mascota =>
+    return this.obtenerMascotas().filter(mascota =>
       mascota.nombre.toLowerCase().includes(texto) ||
       mascota.especie.toLowerCase().includes(texto) ||
       mascota.raza.toLowerCase().includes(texto)
     );
   }
 
-  registrarDueno(datos: Omit<Dueno, 'id'>): Dueno {
-    const nuevoDueno: Dueno = {
-      ...datos,
-      id: this.siguienteDuenoId++
-    };
-
-    this.duenos.push(nuevoDueno);
-    this.guardarDatos();
-
-    return { ...nuevoDueno };
-  }
-
-  eliminarDueno(id: number): boolean {
-    const tieneMascotas = this.mascotas.some(
-      mascota => mascota.duenoId === id
-    );
-
-    if (tieneMascotas) {
-      throw new Error(
-        'No se puede eliminar este propietario porque tiene mascotas registradas.'
-      );
-    }
-
-    const indice = this.duenos.findIndex(
-      dueno => dueno.id === id
-    );
-
-    if (indice === -1) {
-      return false;
-    }
-
-    this.duenos.splice(indice, 1);
-    this.guardarDatos();
-
-    return true;
-  }
-
   registrarMascota(datos: Omit<Mascota, 'id'>): Mascota {
-    const duenoExiste = this.duenos.some(
-      dueno => dueno.id === datos.duenoId
-    );
-
-    if (!duenoExiste) {
-      throw new Error(
-        'Debes registrar al dueño antes que a su mascota.'
-      );
-    }
-
-    const nuevaMascota: Mascota = {
-      ...datos,
-      id: this.siguienteMascotaId++
-    };
-
-    this.mascotas.push(nuevaMascota);
-    this.guardarDatos();
-
-    return { ...nuevaMascota };
+    return this.crear(datos);
   }
 
   eliminarMascota(id: number): boolean {
-    const indice = this.mascotas.findIndex(
-      mascota => mascota.id === id
-    );
+    return this.eliminar(id);
+  }
 
-    if (indice === -1) {
-      return false;
+  // ---------- Dueños (se delega en DuenoService)
+  obtenerDuenos(): Dueno[] {
+    return this.duenoService.obtenerTodos();
+  }
+
+  registrarDueno(datos: Omit<Dueno, 'id'>): Dueno {
+    return this.duenoService.registrar(datos);
+  }
+
+  eliminarDueno(id: number): boolean {
+    if (this.registros.some(mascota => mascota.duenoId === id)) {
+      throw new Error('No se puede eliminar este propietario porque tiene mascotas registradas.');
     }
-
-    this.mascotas.splice(indice, 1);
-    this.guardarDatos();
-
-    return true;
+    return this.duenoService.eliminar(id);
   }
 }

@@ -1,26 +1,39 @@
-
 import { Injectable } from '@angular/core';
 import { Cita } from '../models/cita';
+import { RepositorioLocal } from './base/repositorio-local';
 
+/** Servicio de citas: hereda de RepositorioLocal<Cita>. */
 @Injectable({
   providedIn: 'root'
 })
-export class CitaService {
-  private readonly clave = 'vetsalud_citas';
+export class CitaService extends RepositorioLocal<Cita> {
+  protected readonly clave = 'vetsalud_citas';
+  readonly nombreEntidad = 'cita';
 
-  obtenerCitas(): Cita[] {
-    try {
-      const datos = localStorage.getItem(this.clave);
-      return datos ? JSON.parse(datos) as Cita[] : [];
-    } catch {
-      return [];
+  override describir(cita: Cita): string {
+    return `${cita.motivo} del ${cita.fecha} a las ${cita.hora}`;
+  }
+
+  /** Regla propia: no se puede agendar en un horario ocupado. */
+  protected override validar(datos: Omit<Cita, 'id'>): void {
+    if (!this.estaDisponible(datos.fecha, datos.hora)) {
+      throw new Error('Este horario ya está ocupado. Selecciona otra hora para la cita.');
     }
   }
 
+  /** Regla propia: una cita ya atendida forma parte del historial y no se borra. */
+  protected override validarEliminacion(cita: Cita): void {
+    if (cita.estado === 'Atendida') {
+      throw new Error('Una cita atendida no se puede eliminar; forma parte del historial de la mascota.');
+    }
+  }
+
+  obtenerCitas(): Cita[] {
+    return this.obtenerTodos();
+  }
+
   obtenerCitasPorMascota(mascotaId: number): Cita[] {
-    return this.obtenerCitas().filter(
-      cita => cita.mascotaId === mascotaId
-    );
+    return this.obtenerCitas().filter(cita => cita.mascotaId === mascotaId);
   }
 
   /** Citas ordenadas cronológicamente (fecha y hora ascendente). */
@@ -30,7 +43,7 @@ export class CitaService {
     );
   }
 
-  /** Próximas citas activas (no atendidas ni canceladas) desde hoy. */
+  /** Próximas citas activas (no atendidas ni canceladas) desde una fecha. */
   obtenerProximas(desde: string, limite = 5): Cita[] {
     return this.obtenerCitasOrdenadas()
       .filter(cita =>
@@ -43,7 +56,7 @@ export class CitaService {
 
   /** Indica si un horario está libre (una cita cancelada libera su horario). */
   estaDisponible(fecha: string, hora: string): boolean {
-    return !this.obtenerCitas().some(cita =>
+    return !this.registros.some(cita =>
       cita.fecha === fecha &&
       cita.hora === hora &&
       cita.estado !== 'Cancelada'
@@ -51,72 +64,14 @@ export class CitaService {
   }
 
   agendarCita(datos: Omit<Cita, 'id'>): Cita {
-    const citas = this.obtenerCitas();
-
-    if (!this.estaDisponible(datos.fecha, datos.hora)) {
-      throw new Error(
-        'Este horario ya está ocupado. Selecciona otra hora para la cita.'
-      );
-    }
-
-    const nuevaCita: Cita = {
-      ...datos,
-      id: Date.now()
-    };
-
-    citas.push(nuevaCita);
-
-    localStorage.setItem(
-      this.clave,
-      JSON.stringify(citas)
-    );
-
-    return nuevaCita;
+    return this.crear(datos);
   }
 
-  cambiarEstado(
-    id: number,
-    estado: Cita['estado']
-  ): boolean {
-    const citas = this.obtenerCitas();
-
-    const indice = citas.findIndex(
-      cita => cita.id === id
-    );
-
-    if (indice === -1) {
-      return false;
-    }
-
-    citas[indice] = {
-      ...citas[indice],
-      estado
-    };
-
-    localStorage.setItem(
-      this.clave,
-      JSON.stringify(citas)
-    );
-
-    return true;
+  cambiarEstado(id: number, estado: Cita['estado']): boolean {
+    return this.actualizarParcial(id, { estado });
   }
 
   eliminarCita(id: number): boolean {
-    const citas = this.obtenerCitas();
-
-    const actualizadas = citas.filter(
-      cita => cita.id !== id
-    );
-
-    if (actualizadas.length === citas.length) {
-      return false;
-    }
-
-    localStorage.setItem(
-      this.clave,
-      JSON.stringify(actualizadas)
-    );
-
-    return true;
+    return this.eliminar(id);
   }
 }

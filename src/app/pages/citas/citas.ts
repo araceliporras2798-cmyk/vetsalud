@@ -1,4 +1,4 @@
-import { Component, DestroyRef, OnInit, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, DestroyRef, OnInit, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, FormControl, Validators } from '@angular/forms';
 import { Cita } from '../../models/cita';
@@ -6,10 +6,12 @@ import { Mascota } from '../../models/mascota';
 import { CitaService } from '../../services/cita';
 import { MascotaService } from '../../services/mascota';
 import {
+  ConfirmacionService,
   EstadoCitaPipe,
   FORMULARIO_SHARED,
   FechaLegiblePipe,
   FechaUtil,
+  NotificacionService,
   ResaltarCitaProximaDirective,
   TarjetaResumen,
   TiempoRestantePipe,
@@ -37,6 +39,9 @@ export class Citas implements OnInit {
   private readonly citaService = inject(CitaService);
   private readonly mascotaService = inject(MascotaService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly confirmacion = inject(ConfirmacionService);
+  private readonly notificacion = inject(NotificacionService);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   static readonly APERTURA = '08:00';
   static readonly CIERRE = '20:00';
@@ -48,7 +53,6 @@ export class Citas implements OnInit {
   mascotas: Mascota[] = [];
   citas: Cita[] = [];
   horasOcupadas: string[] = [];
-  mensaje = '';
   error = '';
 
   readonly filtroEstado = new FormControl<FiltroEstado>('Todas', { nonNullable: true });
@@ -144,7 +148,6 @@ export class Citas implements OnInit {
   }
 
   agendarCita(): void {
-    this.mensaje = '';
     this.error = '';
 
     if (this.formulario.invalid) {
@@ -168,7 +171,10 @@ export class Citas implements OnInit {
       this.cargarCitas();
       this.formulario.reset();
       this.actualizarHorasOcupadas(this.c.fecha.value);
-      this.mensaje = 'La cita se registró correctamente.';
+      this.notificacion.exito(
+        `${this.obtenerNombreMascota(Number(datos.mascotaId))} · ${datos.fecha} a las ${datos.hora}.`,
+        'Cita agendada'
+      );
     } catch (e: unknown) {
       this.error = e instanceof Error ? e.message : 'No se pudo registrar la cita.';
     }
@@ -183,22 +189,34 @@ export class Citas implements OnInit {
       this.cargarCitas();
       this.actualizarHorasOcupadas(this.c.fecha.value);
       this.formulario.updateValueAndValidity();
-      this.mensaje = `La cita de ${this.obtenerNombreMascota(cita.mascotaId)} ahora está "${estado}".`;
+      this.notificacion.mostrar('info', `La cita de ${this.obtenerNombreMascota(cita.mascotaId)} ahora está "${estado}".`, 'Estado actualizado');
       this.error = '';
     }
   }
 
-  eliminarCita(cita: Cita): void {
-    if (!confirm('¿Eliminar esta cita de la agenda?')) {
+  async eliminarCita(cita: Cita): Promise<void> {
+    const confirmado = await this.confirmacion.confirmar({
+      titulo: 'Eliminar cita',
+      mensaje: `¿Eliminar la cita de ${this.obtenerNombreMascota(cita.mascotaId)}: ${this.citaService.describir(cita)}?`,
+      detalle: 'Si solo se reprograma o el cliente no asistirá, es mejor cambiar el estado a "Cancelada".',
+      textoConfirmar: 'Sí, eliminar'
+    });
+
+    if (!confirmado) {
       return;
     }
 
-    if (this.citaService.eliminarCita(cita.id)) {
-      this.cargarCitas();
-      this.actualizarHorasOcupadas(this.c.fecha.value);
-      this.formulario.updateValueAndValidity();
-      this.mensaje = 'Cita eliminada correctamente.';
-      this.error = '';
+    try {
+      if (this.citaService.eliminarCita(cita.id)) {
+        this.cargarCitas();
+        this.actualizarHorasOcupadas(this.c.fecha.value);
+        this.formulario.updateValueAndValidity();
+        this.notificacion.exito('Cita eliminada de la agenda.');
+      }
+    } catch (e) {
+      this.notificacion.error(e instanceof Error ? e.message : 'No se pudo eliminar la cita.');
+    } finally {
+      this.cdr.markForCheck();
     }
   }
 }

@@ -1,8 +1,9 @@
-import { Component, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, inject } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
 import { Dueno } from '../../models/mascota';
+import { DuenoService } from '../../services/dueno';
 import { MascotaService } from '../../services/mascota';
-import { FORMULARIO_SHARED, VetValidators } from '../../shared';
+import { ConfirmacionService, FORMULARIO_SHARED, NotificacionService, VetValidators } from '../../shared';
 
 @Component({
   selector: 'app-duenos',
@@ -14,9 +15,12 @@ import { FORMULARIO_SHARED, VetValidators } from '../../shared';
 export class Duenos {
   private readonly fb = inject(FormBuilder);
   private readonly mascotaService = inject(MascotaService);
+  private readonly duenoService = inject(DuenoService);
+  private readonly confirmacion = inject(ConfirmacionService);
+  private readonly notificacion = inject(NotificacionService);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   duenos: Dueno[] = [];
-  mensaje = '';
   error = '';
 
   /** Formulario reactivo con validaciones síncronas y personalizadas. */
@@ -44,7 +48,6 @@ export class Duenos {
   }
 
   registrarDueno(): void {
-    this.mensaje = '';
     this.error = '';
 
     if (this.formulario.invalid) {
@@ -67,7 +70,7 @@ export class Duenos {
 
       this.actualizarDuenos();
       this.formulario.reset();
-      this.mensaje = 'Propietario registrado correctamente.';
+      this.notificacion.exito(`Se registró a ${datos.nombres.trim()} ${datos.apellidos.trim()}.`, 'Propietario registrado');
     } catch (e) {
       this.error = e instanceof Error ? e.message : 'No se pudo registrar al propietario.';
     }
@@ -78,24 +81,31 @@ export class Duenos {
     this.error = '';
   }
 
-  eliminarDueno(id: number): void {
-    this.mensaje = '';
+  /** Pide confirmación con el modal de Bootstrap y elimina al propietario. */
+  async eliminarDueno(dueno: Dueno): Promise<void> {
     this.error = '';
 
-    if (!confirm('¿Estás seguro de que deseas eliminar este propietario?')) {
+    const confirmado = await this.confirmacion.confirmar({
+      titulo: 'Eliminar propietario',
+      mensaje: `¿Deseas eliminar a ${this.duenoService.describir(dueno)}?`,
+      detalle: 'Esta acción no se puede deshacer.',
+      textoConfirmar: 'Sí, eliminar'
+    });
+
+    if (!confirmado) {
       return;
     }
 
     try {
-      if (this.mascotaService.eliminarDueno(id)) {
+      if (this.mascotaService.eliminarDueno(dueno.id)) {
         this.actualizarDuenos();
         this.formulario.controls.dni.updateValueAndValidity();
-        this.mensaje = 'Propietario eliminado correctamente.';
-      } else {
-        this.error = 'No se encontró el propietario seleccionado.';
+        this.notificacion.exito('Propietario eliminado correctamente.');
       }
     } catch (e) {
-      this.error = e instanceof Error ? e.message : 'No se pudo eliminar al propietario.';
+      this.notificacion.error(e instanceof Error ? e.message : 'No se pudo eliminar al propietario.');
+    } finally {
+      this.cdr.markForCheck(); // la vista es OnPush y la respuesta llega de forma asíncrona
     }
   }
 }
