@@ -12,6 +12,45 @@
        aria-label="Perro y gato atendidos en una clínica veterinaria"></div>
 </section>
 
+<section class="panel-hoy" aria-label="Resumen del día">
+  <div class="indicadores">
+    <app-tarjeta-resumen titulo="Dueños registrados" [valor]="totalDuenos" icono="👤" color="azul"
+                         accion="Ver" (seleccionar)="ir('/duenos')" />
+    <app-tarjeta-resumen titulo="Mascotas" [valor]="mascotas.length" icono="🐾" color="turquesa"
+                         accion="Ver" (seleccionar)="ir('/mascotas')" />
+    <app-tarjeta-resumen titulo="Citas de hoy" [valor]="citasHoy" icono="◷" color="ambar"
+                         [detalle]="hoy | fechaLegible" accion="Agenda" (seleccionar)="ir('/citas')" />
+    <app-tarjeta-resumen titulo="Consultas en historial" [valor]="totalConsultas" icono="▤" color="verde"
+                         accion="Ver" (seleccionar)="ir('/historial')" />
+  </div>
+
+  <article class="proximas">
+    <div class="proximas-titulo">
+      <h3>Próximas citas</h3>
+      <a routerLink="/citas">Ver agenda completa →</a>
+    </div>
+
+    @for (cita of proximasCitas; track cita.id) {
+      <div class="proxima" [appResaltarCitaProxima]="cita" [horasAviso]="48">
+        <div class="proxima-fecha">
+          <strong>{{ cita.hora }}</strong>
+          <span>{{ cita.fecha | fechaLegible }}</span>
+        </div>
+        <div class="proxima-detalle">
+          <strong>{{ nombreMascota(cita.mascotaId) }}</strong>
+          <span>{{ cita.motivo }} · {{ cita.veterinario }}</span>
+        </div>
+        <div class="proxima-estado">
+          <span [class]="cita.estado | estadoCita:'clase'">{{ cita.estado | estadoCita }}</span>
+          <small>{{ cita.fecha | tiempoRestante:cita.hora }}</small>
+        </div>
+      </div>
+    } @empty {
+      <p class="sin-citas">No hay citas pendientes. <a routerLink="/citas">Agenda una nueva cita</a>.</p>
+    }
+  </article>
+</section>
+
 <section class="resumen">
 
   <!-- TARJETA DE DUEÑOS -->

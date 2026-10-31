@@ -344,3 +344,48 @@
     grid-column: auto;
   }
 }
+
+/* Resumen del día */
+.panel-hoy { margin: 0 0 28px; }
+.indicadores {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.proximas {
+  padding: 22px 24px;
+  border: 1px solid #e0eaf2;
+  border-radius: 18px;
+  background: #fff;
+}
+.proximas-titulo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.proximas-titulo h3 { margin: 0; color: #174a7e; font-size: 20px; }
+.proximas-titulo a, .sin-citas a { color: #087f91; font-weight: 700; text-decoration: none; }
+.proxima {
+  display: grid;
+  grid-template-columns: 140px 1fr auto;
+  align-items: center;
+  gap: 16px;
+  margin-top: 10px;
+  padding: 12px 16px;
+  border: 1px solid #edf1f5;
+  border-radius: 12px;
+}
+.proxima-fecha strong { display: block; color: #174a7e; font-size: 20px; }
+.proxima-fecha span, .proxima-detalle span { color: #647b8d; font-size: 13px; }
+.proxima-detalle strong { display: block; color: #243b53; }
+.proxima-estado { text-align: right; }
+.proxima-estado small { display: block; margin-top: 4px; color: #159b91; font-weight: 700; }
+.sin-citas { margin: 8px 0 0; color: #647b8d; }
+@media (max-width: 1000px) { .indicadores { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 600px) {
+  .indicadores { grid-template-columns: 1fr; }
+  .proxima { grid-template-columns: 1fr; gap: 6px; }
+  .proxima-estado { text-align: left; }
+}

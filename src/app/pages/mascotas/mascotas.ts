@@ -1,39 +1,47 @@
-
-import { Component } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { Mascota, Dueno } from '../../models/mascota';
+import { Component, inject } from '@angular/core';
+import { FormBuilder, FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Dueno, Mascota } from '../../models/mascota';
 import { MascotaService } from '../../services/mascota';
+import { EdadMascotaPipe, FORMULARIO_SHARED, FechaUtil, VetValidators } from '../../shared';
 
 @Component({
   selector: 'app-mascotas',
   standalone: true,
-  imports: [FormsModule],
+  imports: [...FORMULARIO_SHARED, ReactiveFormsModule, EdadMascotaPipe],
   templateUrl: './mascotas.html',
   styleUrl: './mascotas.css'
 })
 export class Mascotas {
-  mostrarFormulario = false;
-  terminoBusqueda = '';
+  private readonly fb = inject(FormBuilder);
+  private readonly mascotaService = inject(MascotaService);
 
+  readonly especies = ['Perro', 'Gato', 'Ave', 'Conejo', 'Otro'] as const;
+  readonly hoy = FechaUtil.hoyISO();
+
+  mostrarFormulario = false;
   duenos: Dueno[] = [];
   mascotas: Mascota[] = [];
-
   mensaje = '';
   error = '';
 
-  nuevaMascota = {
-    nombre: '',
-    especie: 'Perro',
-    raza: '',
-    fechaNacimiento: '',
-    sexo: 'Macho' as 'Macho' | 'Hembra',
-    peso: 0,
-    color: '',
-    observaciones: '',
-    duenoId: 0
-  };
+  /** Buscador como FormControl independiente (estado reactivo del listado). */
+  readonly busqueda = new FormControl('', { nonNullable: true });
 
-  constructor(private mascotaService: MascotaService) {
+  readonly formulario = this.fb.nonNullable.group({
+    nombre: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(40), VetValidators.noSoloEspacios]],
+    especie: ['Perro', Validators.required],
+    raza: ['', [Validators.required, Validators.maxLength(40), VetValidators.noSoloEspacios]],
+    fechaNacimiento: ['', [Validators.required, VetValidators.fechaNoFutura]],
+    sexo: ['Macho' as Mascota['sexo'], Validators.required],
+    peso: [0, [Validators.required, Validators.min(0.1), Validators.max(150)]],
+    color: ['', [Validators.required, Validators.maxLength(30), VetValidators.noSoloEspacios]],
+    observaciones: ['', Validators.maxLength(250)],
+    duenoId: [0, [Validators.required, Validators.min(1)]]
+  });
+
+  readonly c = this.formulario.controls;
+
+  constructor() {
     this.actualizarDatos();
   }
 
@@ -43,65 +51,59 @@ export class Mascotas {
   }
 
   get mascotasFiltradas(): Mascota[] {
-    const texto = this.terminoBusqueda.trim().toLowerCase();
+    return this.mascotaService.buscarMascotas(this.busqueda.value);
+  }
 
-    return this.mascotas.filter(mascota =>
-      mascota.nombre.toLowerCase().includes(texto) ||
-      mascota.especie.toLowerCase().includes(texto) ||
-      mascota.raza.toLowerCase().includes(texto)
-    );
+  nombreDueno(duenoId: number): string {
+    const dueno = this.duenos.find(d => d.id === duenoId);
+    return dueno ? `${dueno.nombres} ${dueno.apellidos}` : 'Sin dueño';
+  }
+
+  alternarFormulario(): void {
+    this.mostrarFormulario = !this.mostrarFormulario;
+    if (!this.mostrarFormulario) {
+      this.formulario.reset();
+    }
   }
 
   registrarMascota(): void {
     this.mensaje = '';
     this.error = '';
 
-    if (
-      !this.nuevaMascota.nombre.trim() ||
-      !this.nuevaMascota.raza.trim() ||
-      !this.nuevaMascota.fechaNacimiento ||
-      !this.nuevaMascota.color.trim() ||
-      this.nuevaMascota.peso <= 0 ||
-      this.nuevaMascota.duenoId <= 0
-    ) {
-      this.error = 'Completa todos los campos y selecciona un dueño registrado.';
+    if (this.formulario.invalid) {
+      this.formulario.markAllAsTouched();
+      this.error = 'Revisa los campos marcados en rojo y selecciona un dueño registrado.';
       return;
     }
 
+    const datos = this.formulario.getRawValue();
+
     try {
       this.mascotaService.registrarMascota({
-        ...this.nuevaMascota,
-        nombre: this.nuevaMascota.nombre.trim(),
-        raza: this.nuevaMascota.raza.trim(),
-        color: this.nuevaMascota.color.trim(),
-        observaciones: this.nuevaMascota.observaciones.trim()
+        ...datos,
+        peso: Number(datos.peso),
+        duenoId: Number(datos.duenoId),
+        nombre: datos.nombre.trim(),
+        raza: datos.raza.trim(),
+        color: datos.color.trim(),
+        observaciones: datos.observaciones.trim()
       });
 
       this.actualizarDatos();
-      this.mensaje = 'Mascota registrada correctamente.';
-      this.nuevaMascota = {
-        nombre: '',
-        especie: 'Perro',
-        raza: '',
-        fechaNacimiento: '',
-        sexo: 'Macho',
-        peso: 0,
-        color: '',
-        observaciones: '',
-        duenoId: 0
-      };
+      this.formulario.reset();
       this.mostrarFormulario = false;
+      this.mensaje = 'Mascota registrada correctamente.';
     } catch (e) {
-      this.error = e instanceof Error
-        ? e.message
-        : 'No se pudo registrar la mascota.';
+      this.error = e instanceof Error ? e.message : 'No se pudo registrar la mascota.';
     }
   }
 
-  eliminarMascota(id: number): void {
-    const eliminado = this.mascotaService.eliminarMascota(id);
+  eliminarMascota(mascota: Mascota): void {
+    if (!confirm(`¿Eliminar a ${mascota.nombre} del registro?`)) {
+      return;
+    }
 
-    if (eliminado) {
+    if (this.mascotaService.eliminarMascota(mascota.id)) {
       this.actualizarDatos();
       this.mensaje = 'Mascota eliminada correctamente.';
       this.error = '';

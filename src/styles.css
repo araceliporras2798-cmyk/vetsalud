@@ -1,1 +1,80 @@
-/* You can add global styles to this file, and also import other style files */
+/* Estilos globales de VetSalud.
+   Bootstrap 5 se carga antes que este archivo (ver angular.json → styles). */
+
+body {
+  margin: 0;
+  background: #f5f9fc;
+}
+
+/* ---------- Validación visual (directiva appValidacionVisual + Bootstrap) ---------- */
+input.is-valid,
+select.is-valid,
+textarea.is-valid {
+  border-color: #198754 !important;
+  box-shadow: 0 0 0 3px rgb(25 135 84 / 10%) !important;
+}
+
+input.is-invalid,
+select.is-invalid,
+textarea.is-invalid {
+  border-color: #dc3545 !important;
+  background-color: #fffafa !important;
+  box-shadow: 0 0 0 3px rgb(220 53 69 / 12%) !important;
+}
+
+.invalid-feedback,
+.valid-feedback {
+  margin-top: 0;
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+/* ---------- Directiva appResaltarCitaProxima ---------- */
+tr.cita-hoy > td {
+  background: #fff8e1 !important;
+}
+
+tr.cita-hoy > td:first-child {
+  box-shadow: inset 4px 0 0 #f59f00;
+}
+
+tr.cita-proxima > td:first-child {
+  box-shadow: inset 4px 0 0 #3b82f6;
+}
+
+tr.cita-proxima > td {
+  background: #f3f8ff !important;
+}
+
+tr.cita-vencida > td {
+  background: #fdf2f2 !important;
+  color: #8a5a5a !important;
+}
+
+tr.cita-vencida > td:first-child {
+  box-shadow: inset 4px 0 0 #dc3545;
+}
+
+div.cita-hoy {
+  border-left: 5px solid #f59f00 !important;
+  background: #fff8e1;
+}
+
+div.cita-proxima {
+  border-left: 5px solid #3b82f6 !important;
+  background: #f3f8ff;
+}
+
+div.cita-vencida {
+  border-left: 5px solid #dc3545 !important;
+  background: #fdf2f2;
+}
+
+.progress-bar {
+  transition: none;
+}
+
+/* Las badges de estado no deben partirse en dos líneas */
+.badge {
+  white-space: nowrap;
+}

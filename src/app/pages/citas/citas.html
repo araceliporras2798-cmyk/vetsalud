@@ -1,4 +1,3 @@
-
 <section class="pagina-citas">
   <header class="encabezado-pagina">
     <div class="texto-encabezado">
@@ -6,6 +5,7 @@
       <h1>Agenda de citas</h1>
       <p class="descripcion">
         Organiza las consultas y brinda una atención oportuna a cada mascota.
+        Horario de atención: {{ apertura }} a {{ cierre }}.
       </p>
     </div>
 
@@ -16,117 +16,103 @@
     </div>
   </header>
 
-  <div class="resumen">
-    <div class="icono-resumen">✚</div>
-    <div>
-      <p>Total de citas registradas</p>
-      <strong>{{ totalCitas }}</strong>
-    </div>
+  <div class="indicadores">
+    <app-tarjeta-resumen titulo="Total de citas" [valor]="totalCitas" icono="✚" color="azul" />
+    <app-tarjeta-resumen titulo="Citas para hoy" [valor]="citasHoy" icono="◷" color="ambar"
+                         [detalle]="fechaMinima | fechaLegible" />
+    <app-tarjeta-resumen titulo="Por atender" [valor]="citasPendientes" icono="⏳" color="turquesa"
+                         detalle="Pendientes y confirmadas" />
   </div>
 
-  <div class="mensaje exito" *ngIf="mensaje">
-    {{ mensaje }}
-  </div>
-
-  <div class="mensaje error" *ngIf="error">
-    {{ error }}
-  </div>
+  <app-alerta tipo="success" [mensaje]="mensaje" (cerrar)="mensaje = ''" />
+  <app-alerta tipo="danger" [mensaje]="error" (cerrar)="error = ''" />
 
   <section class="tarjeta">
     <div class="titulo-seccion">
       <div>
         <h2>Agendar nueva cita</h2>
-        <p class="ayuda">
-          Completa los datos para registrar una consulta veterinaria.
-        </p>
+        <p class="ayuda">Completa los datos para registrar una consulta veterinaria.</p>
       </div>
       <span class="etiqueta">Nueva cita</span>
     </div>
 
-    <div class="aviso" *ngIf="mascotas.length === 0">
-      Todavía no hay mascotas disponibles.
-      Registra primero una mascota en la sección Mascotas.
-    </div>
+    @if (mascotas.length === 0) {
+      <app-alerta tipo="warning" [cerrable]="false"
+                  mensaje="Todavía no hay mascotas disponibles. Registra primero una mascota en la sección Mascotas." />
+    }
 
-    <form (ngSubmit)="agendarCita()" #formCita="ngForm">
+    <app-progreso-formulario [formulario]="formulario" />
+
+    <form [formGroup]="formulario" (ngSubmit)="agendarCita()" novalidate>
       <div class="formulario-grid">
         <div class="campo">
           <label for="mascota">Mascota *</label>
-          <select
-            id="mascota"
-            name="mascotaId"
-            [(ngModel)]="nuevaCita.mascotaId"
-            required>
-            <option [ngValue]="0" disabled>
-              Selecciona una mascota
-            </option>
-            <option
-              *ngFor="let mascota of mascotas"
-              [ngValue]="mascota.id">
-              {{ mascota.nombre }} — {{ mascota.especie }}
-            </option>
+          <select id="mascota" formControlName="mascotaId" appValidacionVisual>
+            <option [ngValue]="0" disabled>Selecciona una mascota</option>
+            @for (mascota of mascotas; track mascota.id) {
+              <option [ngValue]="mascota.id">{{ mascota.nombre }} — {{ mascota.especie }}</option>
+            }
           </select>
+          <app-error-campo [control]="c.mascotaId" etiqueta="La mascota" />
         </div>
 
         <div class="campo">
           <label for="fecha">Fecha de la cita *</label>
-          <input
-            id="fecha"
-            name="fecha"
-            type="date"
-            [min]="fechaMinima"
-            [(ngModel)]="nuevaCita.fecha"
-            required>
+          <input id="fecha" type="date" [min]="fechaMinima" formControlName="fecha" appValidacionVisual>
+          <app-error-campo [control]="c.fecha" etiqueta="La fecha" />
+          @if (c.fecha.valid) {
+            <small class="ayuda-campo">{{ c.fecha.value | fechaLegible:'larga' }}</small>
+          }
         </div>
 
         <div class="campo">
           <label for="hora">Hora *</label>
-          <input
-            id="hora"
-            name="hora"
-            type="time"
-            [(ngModel)]="nuevaCita.hora"
-            required>
+          <input id="hora" type="time" [min]="apertura" [max]="cierre" step="900"
+                 formControlName="hora" appValidacionVisual
+                 [class.is-invalid]="!!errorHorario">
+          <app-error-campo [control]="c.hora" etiqueta="La hora" />
+          @if (errorHorario) {
+            <div class="invalid-feedback d-block">{{ errorHorario }}</div>
+          } @else if (horarioLibre) {
+            <div class="valid-feedback d-block">✔ Horario disponible</div>
+          }
         </div>
 
         <div class="campo">
           <label for="motivo">Motivo de consulta *</label>
-          <input
-            id="motivo"
-            name="motivo"
-            type="text"
-            [(ngModel)]="nuevaCita.motivo"
-            placeholder="Ej. Vacunación, control o revisión"
-            required>
+          <input id="motivo" type="text" formControlName="motivo" appValidacionVisual
+                 placeholder="Ej. Vacunación, control o revisión">
+          <app-error-campo [control]="c.motivo" etiqueta="El motivo" />
+        </div>
+
+        <div class="campo campo-completo">
+          <span class="etiqueta-ocupadas">Horas ocupadas el {{ c.fecha.value | fechaLegible }}:</span>
+          <div class="horas-ocupadas">
+            @for (hora of horasOcupadas; track hora) {
+              <span class="badge rounded-pill text-bg-danger">{{ hora }}</span>
+            } @empty {
+              <span class="badge rounded-pill text-bg-success">Todo el día disponible</span>
+            }
+          </div>
         </div>
 
         <div class="campo campo-completo">
           <label for="veterinario">Veterinario responsable *</label>
-          <input
-            id="veterinario"
-            name="veterinario"
-            type="text"
-            [(ngModel)]="nuevaCita.veterinario"
-            placeholder="Nombre del veterinario"
-            required>
+          <input id="veterinario" type="text" formControlName="veterinario" appValidacionVisual
+                 placeholder="Nombre del veterinario">
+          <app-error-campo [control]="c.veterinario" etiqueta="El nombre del veterinario" />
         </div>
 
         <div class="campo campo-completo">
-          <label for="observaciones">Observaciones</label>
-          <textarea
-            id="observaciones"
-            name="observaciones"
-            [(ngModel)]="nuevaCita.observaciones"
-            rows="3"
-            placeholder="Información adicional sobre la consulta"></textarea>
+          <label for="observaciones">Observaciones <small>({{ c.observaciones.value.length }}/250)</small></label>
+          <textarea id="observaciones" formControlName="observaciones" appValidacionVisual rows="3"
+                    placeholder="Información adicional sobre la consulta"></textarea>
+          <app-error-campo [control]="c.observaciones" etiqueta="Las observaciones" />
         </div>
       </div>
 
       <div class="acciones-formulario">
-        <button
-          class="boton-principal"
-          type="submit"
-          [disabled]="mascotas.length === 0">
+        <button class="boton-principal" type="submit" [disabled]="formulario.invalid || mascotas.length === 0">
           Agendar cita
         </button>
       </div>
@@ -137,65 +123,77 @@
     <div class="titulo-seccion">
       <div>
         <h2>Citas registradas</h2>
-        <p class="ayuda">
-          Consulta las citas y actualiza su estado.
-        </p>
+        <p class="ayuda">Ordenadas por fecha y hora. Las citas de hoy y las próximas se resaltan automáticamente.</p>
       </div>
-      <span class="contador">{{ totalCitas }} citas</span>
+      <div class="filtro">
+        <label for="filtroEstado">Estado</label>
+        <select id="filtroEstado" class="selector-estado" [formControl]="filtroEstado">
+          <option value="Todas">Todas ({{ totalCitas }})</option>
+          @for (estado of estados; track estado) {
+            <option [value]="estado">{{ estado }}</option>
+          }
+        </select>
+      </div>
     </div>
 
-    <div class="estado-vacio" *ngIf="citas.length === 0">
-      <div class="icono-vacio">▣</div>
-      <h3>Aún no hay citas registradas</h3>
-      <p>Las citas que registres aparecerán aquí.</p>
+    <div class="leyenda">
+      <span><i class="muestra hoy"></i> Hoy</span>
+      <span><i class="muestra proxima"></i> Próximas 48 h</span>
+      <span><i class="muestra vencida"></i> Vencida sin atender</span>
     </div>
 
-    <div class="tabla-contenedor" *ngIf="citas.length > 0">
-      <table>
-        <thead>
-          <tr>
-            <th>Mascota</th>
-            <th>Fecha y hora</th>
-            <th>Motivo</th>
-            <th>Veterinario</th>
-            <th>Estado</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let cita of citas">
-            <td>
-              <strong>{{ obtenerNombreMascota(cita.mascotaId) }}</strong>
-            </td>
-            <td>
-              {{ cita.fecha }}
-              <span class="hora">{{ cita.hora }}</span>
-            </td>
-            <td>{{ cita.motivo }}</td>
-            <td>{{ cita.veterinario }}</td>
-            <td>
-              <select
-                class="selector-estado"
-                [ngModel]="cita.estado"
-                [ngModelOptions]="{standalone: true}"
-                (ngModelChange)="cambiarEstado(cita, $event)">
-                <option value="Pendiente">Pendiente</option>
-                <option value="Confirmada">Confirmada</option>
-                <option value="Atendida">Atendida</option>
-                <option value="Cancelada">Cancelada</option>
-              </select>
-            </td>
-            <td>
-              <button
-                class="boton-cancelar"
-                type="button"
-                (click)="eliminarCita(cita)">
-                Eliminar
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+    @if (citasFiltradas.length === 0) {
+      <div class="estado-vacio">
+        <div class="icono-vacio">▣</div>
+        <h3>No hay citas para mostrar</h3>
+        <p>Las citas que registres aparecerán aquí.</p>
+      </div>
+    } @else {
+      <div class="tabla-contenedor">
+        <table>
+          <thead>
+            <tr>
+              <th>Mascota</th>
+              <th>Fecha y hora</th>
+              <th>Motivo</th>
+              <th>Veterinario</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (cita of citasFiltradas; track cita.id) {
+              <tr [appResaltarCitaProxima]="cita" [horasAviso]="48">
+                <td><strong>{{ obtenerNombreMascota(cita.mascotaId) }}</strong></td>
+                <td>
+                  {{ cita.fecha | fechaLegible }}
+                  <span class="hora">
+                    {{ cita.hora }}
+                    @if (cita.estado === 'Pendiente' || cita.estado === 'Confirmada') {
+                      · {{ cita.fecha | tiempoRestante:cita.hora }}
+                    }
+                  </span>
+                </td>
+                <td>{{ cita.motivo }}</td>
+                <td>{{ cita.veterinario }}</td>
+                <td>
+                  <span [class]="cita.estado | estadoCita:'clase'">{{ cita.estado | estadoCita }}</span>
+                  <select class="selector-estado mt-2" [attr.aria-label]="'Cambiar estado de la cita'"
+                          [value]="cita.estado"
+                          (change)="cambiarEstado(cita, $any($event.target).value)">
+                    @for (estado of estados; track estado) {
+                      <option [value]="estado" [selected]="estado === cita.estado">{{ estado }}</option>
+                    }
+                  </select>
+                </td>
+                <td>
+                  <button class="boton-cancelar" type="button" (click)="eliminarCita(cita)">Eliminar</button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
   </section>
 </section>

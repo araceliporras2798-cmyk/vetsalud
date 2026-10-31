@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
 import { Dashboard } from './dashboard';
 
 describe('Dashboard', () => {
@@ -6,8 +7,10 @@ describe('Dashboard', () => {
   let fixture: ComponentFixture<Dashboard>;
 
   beforeEach(async () => {
+    localStorage.clear();
     await TestBed.configureTestingModule({
       imports: [Dashboard],
+      providers: [provideRouter([])]
     }).compileComponents();
 
     fixture = TestBed.createComponent(Dashboard);
@@ -15,7 +18,7 @@ describe('Dashboard', () => {
     await fixture.whenStable();
   });
 
-  it('should create', () => {
+  it('se crea correctamente', () => {
     expect(component).toBeTruthy();
   });
 });

@@ -1,65 +1,69 @@
-
-import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { Component, OnInit, inject } from '@angular/core';
+import { FormBuilder, FormControl, Validators } from '@angular/forms';
 import { RegistroClinico } from '../../models/historial';
 import { Mascota } from '../../models/mascota';
 import { HistorialService } from '../../services/historial';
 import { MascotaService } from '../../services/mascota';
+import {
+  EdadMascotaPipe,
+  FORMULARIO_SHARED,
+  FechaLegiblePipe,
+  FechaUtil,
+  TarjetaResumen,
+  VetValidators
+} from '../../shared';
 
 @Component({
   selector: 'app-historial',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [...FORMULARIO_SHARED, FechaLegiblePipe, EdadMascotaPipe, TarjetaResumen],
   templateUrl: './historial.html',
   styleUrl: './historial.css'
 })
 export class Historial implements OnInit {
+  private readonly fb = inject(FormBuilder);
+  private readonly historialService = inject(HistorialService);
+  private readonly mascotaService = inject(MascotaService);
+
+  readonly tiposConsulta = [
+    'Consulta general', 'Vacunación', 'Desparasitación',
+    'Control médico', 'Emergencia', 'Cirugía', 'Otro'
+  ] as const;
+
+  readonly hoy = FechaUtil.hoyISO();
+
   mascotas: Mascota[] = [];
   registros: RegistroClinico[] = [];
-
-  mascotaSeleccionada: number | null = null;
-
   mensaje = '';
   error = '';
 
-  nuevoRegistro = {
-    mascotaId: 0,
-    fecha: '',
-    tipoConsulta: '',
-    veterinario: '',
-    diagnostico: '',
-    tratamiento: '',
-    observaciones: ''
-  };
+  /** Filtro del timeline: null = todas las mascotas. */
+  readonly filtroMascota = new FormControl<number | null>(null);
 
-  constructor(
-    private historialService: HistorialService,
-    private mascotaService: MascotaService
-  ) {}
+  readonly formulario = this.fb.nonNullable.group({
+    mascotaId: [0, [Validators.required, Validators.min(1)]],
+    fecha: [FechaUtil.hoyISO(), [Validators.required, VetValidators.fechaNoFutura]],
+    tipoConsulta: ['', Validators.required],
+    veterinario: ['', [Validators.required, Validators.minLength(3), VetValidators.soloLetras]],
+    diagnostico: ['', [Validators.required, Validators.minLength(5), Validators.maxLength(400), VetValidators.noSoloEspacios]],
+    tratamiento: ['', Validators.maxLength(400)],
+    observaciones: ['', Validators.maxLength(250)]
+  });
+
+  readonly c = this.formulario.controls;
 
   ngOnInit(): void {
-    this.nuevoRegistro.fecha = this.fechaActual();
     this.mascotas = this.mascotaService.obtenerMascotas();
     this.actualizarRegistros();
   }
 
-  fechaActual(): string {
-    const hoy = new Date();
-    const mes = String(hoy.getMonth() + 1).padStart(2, '0');
-    const dia = String(hoy.getDate()).padStart(2, '0');
-
-    return `${hoy.getFullYear()}-${mes}-${dia}`;
+  get mascotaSeleccionada(): Mascota | undefined {
+    return this.mascotas.find(m => m.id === this.filtroMascota.value);
   }
 
   get registrosFiltrados(): RegistroClinico[] {
-    if (this.mascotaSeleccionada === null) {
-      return this.registros;
-    }
-
-    return this.registros.filter(
-      registro => registro.mascotaId === this.mascotaSeleccionada
-    );
+    const id = this.filtroMascota.value;
+    return id === null ? this.registros : this.registros.filter(r => r.mascotaId === id);
   }
 
   get totalRegistros(): number {
@@ -67,70 +71,47 @@ export class Historial implements OnInit {
   }
 
   get mascotasAtendidas(): number {
-    return new Set(
-      this.registrosFiltrados.map(registro => registro.mascotaId)
-    ).size;
+    return new Set(this.registrosFiltrados.map(r => r.mascotaId)).size;
+  }
+
+  get ultimaAtencion(): string {
+    return this.registrosFiltrados[0]?.fecha ?? '';
   }
 
   actualizarRegistros(): void {
     this.registros = this.historialService
       .obtenerRegistros()
-      .sort((a, b) => b.fecha.localeCompare(a.fecha));
+      .sort((a, b) => b.fecha.localeCompare(a.fecha) || b.id - a.id);
   }
 
   obtenerNombreMascota(mascotaId: number): string {
-    const mascota = this.mascotas.find(
-      item => item.id === mascotaId
-    );
-
-    return mascota
-      ? mascota.nombre
-      : 'Mascota eliminada';
+    return this.mascotas.find(m => m.id === mascotaId)?.nombre ?? 'Mascota eliminada';
   }
 
   registrarConsulta(): void {
     this.mensaje = '';
     this.error = '';
 
-    if (this.mascotas.length === 0) {
-      this.error = 'Primero registra una mascota.';
+    if (this.formulario.invalid) {
+      this.formulario.markAllAsTouched();
+      this.error = 'Revisa los campos marcados en rojo antes de guardar.';
       return;
     }
 
-    if (
-      !this.nuevoRegistro.mascotaId ||
-      !this.nuevoRegistro.fecha ||
-      !this.nuevoRegistro.tipoConsulta.trim() ||
-      !this.nuevoRegistro.veterinario.trim() ||
-      !this.nuevoRegistro.diagnostico.trim()
-    ) {
-      this.error = 'Completa los campos obligatorios.';
-      return;
-    }
+    const datos = this.formulario.getRawValue();
 
     try {
       this.historialService.registrar({
-        ...this.nuevoRegistro,
-        mascotaId: Number(this.nuevoRegistro.mascotaId),
-        tipoConsulta: this.nuevoRegistro.tipoConsulta.trim(),
-        veterinario: this.nuevoRegistro.veterinario.trim(),
-        diagnostico: this.nuevoRegistro.diagnostico.trim(),
-        tratamiento: this.nuevoRegistro.tratamiento.trim(),
-        observaciones: this.nuevoRegistro.observaciones.trim()
+        ...datos,
+        mascotaId: Number(datos.mascotaId),
+        veterinario: datos.veterinario.trim(),
+        diagnostico: datos.diagnostico.trim(),
+        tratamiento: datos.tratamiento.trim(),
+        observaciones: datos.observaciones.trim()
       });
 
       this.actualizarRegistros();
-
-      this.nuevoRegistro = {
-        mascotaId: 0,
-        fecha: this.fechaActual(),
-        tipoConsulta: '',
-        veterinario: '',
-        diagnostico: '',
-        tratamiento: '',
-        observaciones: ''
-      };
-
+      this.formulario.reset();
       this.mensaje = 'Consulta registrada correctamente.';
     } catch {
       this.error = 'No se pudo registrar la consulta.';
@@ -138,9 +119,11 @@ export class Historial implements OnInit {
   }
 
   eliminarRegistro(registro: RegistroClinico): void {
-    const eliminado = this.historialService.eliminar(registro.id);
+    if (!confirm('¿Eliminar este registro clínico?')) {
+      return;
+    }
 
-    if (eliminado) {
+    if (this.historialService.eliminar(registro.id)) {
       this.actualizarRegistros();
       this.mensaje = 'Registro eliminado correctamente.';
       this.error = '';

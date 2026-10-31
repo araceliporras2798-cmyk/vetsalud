@@ -23,16 +23,37 @@ export class CitaService {
     );
   }
 
+  /** Citas ordenadas cronológicamente (fecha y hora ascendente). */
+  obtenerCitasOrdenadas(): Cita[] {
+    return this.obtenerCitas().sort((a, b) =>
+      `${a.fecha} ${a.hora}`.localeCompare(`${b.fecha} ${b.hora}`)
+    );
+  }
+
+  /** Próximas citas activas (no atendidas ni canceladas) desde hoy. */
+  obtenerProximas(desde: string, limite = 5): Cita[] {
+    return this.obtenerCitasOrdenadas()
+      .filter(cita =>
+        cita.fecha >= desde &&
+        cita.estado !== 'Atendida' &&
+        cita.estado !== 'Cancelada'
+      )
+      .slice(0, limite);
+  }
+
+  /** Indica si un horario está libre (una cita cancelada libera su horario). */
+  estaDisponible(fecha: string, hora: string): boolean {
+    return !this.obtenerCitas().some(cita =>
+      cita.fecha === fecha &&
+      cita.hora === hora &&
+      cita.estado !== 'Cancelada'
+    );
+  }
+
   agendarCita(datos: Omit<Cita, 'id'>): Cita {
     const citas = this.obtenerCitas();
 
-    const horarioOcupado = citas.some(cita =>
-      cita.fecha === datos.fecha &&
-      cita.hora === datos.hora &&
-      cita.estado !== 'Cancelada'
-    );
-
-    if (horarioOcupado) {
+    if (!this.estaDisponible(datos.fecha, datos.hora)) {
       throw new Error(
         'Este horario ya está ocupado. Selecciona otra hora para la cita.'
       );

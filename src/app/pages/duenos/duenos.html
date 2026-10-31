@@ -9,58 +9,63 @@
 
 <section class="panel-duenos">
   <h3>Datos del propietario</h3>
-  <p class="descripcion">Completa los campos para registrar un nuevo dueño.</p>
+  <p class="descripcion">Completa los campos para registrar un nuevo dueño. Los campos con * son obligatorios.</p>
 
-  @if (mensaje) {
-    <div class="mensaje-exito">{{ mensaje }}</div>
-  }
+  <app-alerta tipo="success" [mensaje]="mensaje" (cerrar)="mensaje = ''" />
+  <app-alerta tipo="danger" [mensaje]="error" (cerrar)="error = ''" />
 
-  @if (error) {
-    <div class="mensaje-error">{{ error }}</div>
-  }
+  <app-progreso-formulario [formulario]="formulario" />
 
-  <form (ngSubmit)="registrarDueno()">
+  <form [formGroup]="formulario" (ngSubmit)="registrarDueno()" novalidate>
     <div class="campos-dueno">
       <div class="campo">
         <label for="nombres">Nombres *</label>
-        <input id="nombres" name="nombres" type="text"
-               [(ngModel)]="nuevoDueno.nombres" required>
+        <input id="nombres" type="text" formControlName="nombres" appValidacionVisual
+               placeholder="Ej. María Fernanda">
+        <app-error-campo [control]="c.nombres" etiqueta="El nombre" />
       </div>
 
       <div class="campo">
         <label for="apellidos">Apellidos *</label>
-        <input id="apellidos" name="apellidos" type="text"
-               [(ngModel)]="nuevoDueno.apellidos" required>
+        <input id="apellidos" type="text" formControlName="apellidos" appValidacionVisual
+               placeholder="Ej. Rojas Quispe">
+        <app-error-campo [control]="c.apellidos" etiqueta="El apellido" />
       </div>
 
       <div class="campo">
         <label for="dni">DNI *</label>
-        <input id="dni" name="dni" type="text"
-               inputmode="numeric" maxlength="8"
-               [(ngModel)]="nuevoDueno.dni" required>
+        <input id="dni" type="text" formControlName="dni" appValidacionVisual
+               appSoloNumeros [maxDigitos]="8" placeholder="8 dígitos">
+        <app-error-campo [control]="c.dni" etiqueta="El DNI" />
       </div>
 
       <div class="campo">
-        <label for="telefono">Teléfono *</label>
-        <input id="telefono" name="telefono" type="tel"
-               [(ngModel)]="nuevoDueno.telefono" required>
+        <label for="telefono">Celular *</label>
+        <input id="telefono" type="tel" formControlName="telefono" appValidacionVisual
+               appSoloNumeros [maxDigitos]="9" placeholder="9XXXXXXXX">
+        <app-error-campo [control]="c.telefono" etiqueta="El celular" />
       </div>
 
       <div class="campo">
         <label for="correo">Correo electrónico</label>
-        <input id="correo" name="correo" type="email"
-               [(ngModel)]="nuevoDueno.correo">
+        <input id="correo" type="email" formControlName="correo" appValidacionVisual
+               placeholder="nombre@correo.com">
+        <app-error-campo [control]="c.correo" etiqueta="El correo" />
       </div>
 
       <div class="campo">
         <label for="direccion">Dirección *</label>
-        <input id="direccion" name="direccion" type="text"
-               [(ngModel)]="nuevoDueno.direccion" required>
+        <input id="direccion" type="text" formControlName="direccion" appValidacionVisual
+               placeholder="Av. / Jr. / Calle, número y distrito">
+        <app-error-campo [control]="c.direccion" etiqueta="La dirección" />
       </div>
     </div>
 
     <div class="acciones-dueno">
-      <button class="boton-guardar" type="submit">
+      <button class="boton-limpiar" type="button" (click)="limpiar()" [disabled]="formulario.pristine">
+        Limpiar
+      </button>
+      <button class="boton-guardar" type="submit" [disabled]="formulario.invalid">
         Guardar propietario
       </button>
     </div>
@@ -68,7 +73,7 @@
 </section>
 
 <section class="panel-duenos listado-duenos">
-  <h3>Propietarios registrados</h3>
+  <h3>Propietarios registrados <span class="badge rounded-pill text-bg-info align-middle fs-6">{{ duenos.length }}</span></h3>
 
   @if (duenos.length === 0) {
     <p class="sin-registros">Todavía no hay propietarios registrados.</p>
@@ -79,7 +84,7 @@
           <tr>
             <th>Nombre completo</th>
             <th>DNI</th>
-            <th>Teléfono</th>
+            <th>Celular</th>
             <th>Correo</th>
             <th>Acciones</th>
           </tr>
@@ -92,10 +97,7 @@
               <td>{{ dueno.telefono }}</td>
               <td>{{ dueno.correo || 'No indicado' }}</td>
               <td>
-                <button
-                  class="boton-eliminar"
-                  type="button"
-                  (click)="eliminarDueno(dueno.id)">
+                <button class="boton-eliminar" type="button" (click)="eliminarDueno(dueno.id)">
                   Eliminar
                 </button>
               </td>

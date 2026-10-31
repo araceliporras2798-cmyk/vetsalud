@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
 import { Historial } from './historial';
 
 describe('Historial', () => {
@@ -6,8 +7,10 @@ describe('Historial', () => {
   let fixture: ComponentFixture<Historial>;
 
   beforeEach(async () => {
+    localStorage.clear();
     await TestBed.configureTestingModule({
       imports: [Historial],
+      providers: [provideRouter([])]
     }).compileComponents();
 
     fixture = TestBed.createComponent(Historial);
@@ -15,7 +18,7 @@ describe('Historial', () => {
     await fixture.whenStable();
   });
 
-  it('should create', () => {
+  it('se crea correctamente', () => {
     expect(component).toBeTruthy();
   });
 });

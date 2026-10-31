@@ -323,3 +323,8 @@
     width: 100%;
   }
 }
+
+.ayuda-campo {
+  color: #0f8b80;
+  font-weight: 600;
+}

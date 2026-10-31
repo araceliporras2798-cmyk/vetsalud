@@ -1,32 +1,41 @@
-
-import { Component } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { Component, inject } from '@angular/core';
+import { FormBuilder, Validators } from '@angular/forms';
 import { Dueno } from '../../models/mascota';
 import { MascotaService } from '../../services/mascota';
+import { FORMULARIO_SHARED, VetValidators } from '../../shared';
 
 @Component({
   selector: 'app-duenos',
   standalone: true,
-  imports: [FormsModule],
+  imports: [...FORMULARIO_SHARED],
   templateUrl: './duenos.html',
   styleUrl: './duenos.css'
 })
 export class Duenos {
-  duenos: Dueno[] = [];
+  private readonly fb = inject(FormBuilder);
+  private readonly mascotaService = inject(MascotaService);
 
+  duenos: Dueno[] = [];
   mensaje = '';
   error = '';
 
-  nuevoDueno = {
-    nombres: '',
-    apellidos: '',
-    dni: '',
-    telefono: '',
-    correo: '',
-    direccion: ''
-  };
+  /** Formulario reactivo con validaciones síncronas y personalizadas. */
+  readonly formulario = this.fb.nonNullable.group({
+    nombres: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(60), VetValidators.noSoloEspacios, VetValidators.soloLetras]],
+    apellidos: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(60), VetValidators.noSoloEspacios, VetValidators.soloLetras]],
+    dni: ['', [
+      Validators.required,
+      VetValidators.dni,
+      VetValidators.valorUnico(() => this.duenos.map(d => d.dni), 'dniDuplicado')
+    ]],
+    telefono: ['', [Validators.required, VetValidators.celularPeru]],
+    correo: ['', [Validators.email, Validators.maxLength(80)]],
+    direccion: ['', [Validators.required, Validators.minLength(5), Validators.maxLength(120), VetValidators.noSoloEspacios]]
+  });
 
-  constructor(private mascotaService: MascotaService) {
+  readonly c = this.formulario.controls;
+
+  constructor() {
     this.actualizarDuenos();
   }
 
@@ -38,76 +47,55 @@ export class Duenos {
     this.mensaje = '';
     this.error = '';
 
-    const nombres = this.nuevoDueno.nombres.trim();
-    const apellidos = this.nuevoDueno.apellidos.trim();
-    const dni = this.nuevoDueno.dni.trim();
-    const telefono = this.nuevoDueno.telefono.trim();
-    const correo = this.nuevoDueno.correo.trim();
-    const direccion = this.nuevoDueno.direccion.trim();
-
-    if (!nombres || !apellidos || !dni || !telefono || !direccion) {
-      this.error = 'Completa todos los campos obligatorios.';
+    if (this.formulario.invalid) {
+      this.formulario.markAllAsTouched();
+      this.error = 'Revisa los campos marcados en rojo antes de guardar.';
       return;
     }
 
-    if (!/^\d{8}$/.test(dni)) {
-      this.error = 'El DNI debe tener exactamente 8 números.';
-      return;
-    }
+    const datos = this.formulario.getRawValue();
 
     try {
       this.mascotaService.registrarDueno({
-        nombres,
-        apellidos,
-        dni,
-        telefono,
-        correo,
-        direccion
+        nombres: datos.nombres.trim(),
+        apellidos: datos.apellidos.trim(),
+        dni: datos.dni,
+        telefono: datos.telefono,
+        correo: datos.correo.trim(),
+        direccion: datos.direccion.trim()
       });
 
       this.actualizarDuenos();
+      this.formulario.reset();
       this.mensaje = 'Propietario registrado correctamente.';
-
-      this.nuevoDueno = {
-        nombres: '',
-        apellidos: '',
-        dni: '',
-        telefono: '',
-        correo: '',
-        direccion: ''
-      };
     } catch (e) {
-      this.error = e instanceof Error
-        ? e.message
-        : 'No se pudo registrar al propietario.';
+      this.error = e instanceof Error ? e.message : 'No se pudo registrar al propietario.';
     }
+  }
+
+  limpiar(): void {
+    this.formulario.reset();
+    this.error = '';
   }
 
   eliminarDueno(id: number): void {
     this.mensaje = '';
     this.error = '';
 
-    const confirmado = confirm(
-      '¿Estás seguro de que deseas eliminar este propietario?'
-    );
-
-    if (!confirmado) {
+    if (!confirm('¿Estás seguro de que deseas eliminar este propietario?')) {
       return;
     }
 
     try {
-      const eliminado = this.mascotaService.eliminarDueno(id);
-
-      if (eliminado) {
+      if (this.mascotaService.eliminarDueno(id)) {
         this.actualizarDuenos();
+        this.formulario.controls.dni.updateValueAndValidity();
         this.mensaje = 'Propietario eliminado correctamente.';
       } else {
         this.error = 'No se encontró el propietario seleccionado.';
       }
     } catch (e) {
-      this.error = e instanceof Error
-        ? e.message
-        : 'No se pudo eliminar al propietario.';
+      this.error = e instanceof Error ? e.message : 'No se pudo eliminar al propietario.';
     }
   }
 }

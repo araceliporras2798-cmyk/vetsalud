@@ -172,3 +172,24 @@
     width: 100%;
   }
 }
+
+.acciones-dueno {
+  gap: 12px;
+}
+
+.boton-limpiar {
+  padding: 13px 20px;
+  border: 1px solid #d6e3eb;
+  border-radius: 8px;
+  background: #fff;
+  color: #42627b;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.boton-guardar:disabled,
+.boton-limpiar:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}

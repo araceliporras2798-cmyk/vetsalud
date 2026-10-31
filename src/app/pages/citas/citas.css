@@ -85,44 +85,6 @@ h1 {
   transform: scale(1.04);
 }
 
-/* Resumen de citas */
-.resumen {
-  display: flex;
-  align-items: center;
-  gap: 17px;
-  margin-bottom: 24px;
-  padding: 21px 25px;
-  border: 1px solid #cdebe6;
-  border-radius: 17px;
-  background: linear-gradient(115deg, #e4f7f3, #f5fcfb);
-  box-shadow: 0 5px 16px rgb(32 169 155 / 5%);
-}
-
-.icono-resumen {
-  display: grid;
-  place-items: center;
-  width: 54px;
-  height: 54px;
-  flex-shrink: 0;
-  border-radius: 16px;
-  background: #20a99b;
-  color: #ffffff;
-  font-size: 26px;
-}
-
-.resumen p {
-  margin: 0 0 4px;
-  color: #527578;
-  font-size: 13px;
-  font-weight: 600;
-}
-
-.resumen strong {
-  color: #174a7e;
-  font-size: 29px;
-  font-weight: 800;
-}
-
 /* Tarjetas y títulos */
 .tarjeta {
   margin-bottom: 24px;
@@ -267,38 +229,6 @@ h2 {
   cursor: not-allowed;
 }
 
-/* Mensajes y avisos */
-.mensaje {
-  margin: 16px 0;
-  padding: 14px 16px;
-  border-radius: 11px;
-  font-size: 14px;
-  line-height: 1.6;
-}
-
-.exito {
-  border: 1px solid #a7e4c0;
-  background: #effbf3;
-  color: #187443;
-}
-
-.error {
-  border: 1px solid #f2b8b5;
-  background: #fff3f2;
-  color: #b42318;
-}
-
-.aviso {
-  margin-bottom: 20px;
-  padding: 15px 17px;
-  border: 1px solid #f1dca9;
-  border-radius: 11px;
-  background: #fff9eb;
-  color: #805d15;
-  font-size: 13px;
-  line-height: 1.7;
-}
-
 /* Tabla de citas */
 .tabla-contenedor {
   width: 100%;
@@ -341,11 +271,7 @@ tbody tr {
   transition: background 0.18s ease;
 }
 
-tbody tr:nth-child(even) {
-  background: #fafcfe;
-}
-
-tbody tr:hover {
+tbody tr:hover td {
   background: #f0faf8;
 }
 
@@ -526,5 +452,79 @@ td strong {
     scroll-behavior: auto !important;
     transition-duration: 0.01ms !important;
     animation-duration: 0.01ms !important;
+  }
+}
+
+/* Indicadores (componente reutilizable app-tarjeta-resumen) */
+.indicadores {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.ayuda-campo {
+  color: #159b91;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.etiqueta-ocupadas {
+  color: #344f67;
+  font-size: 13px;
+  font-weight: 750;
+}
+
+.horas-ocupadas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.filtro {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #344f67;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.leyenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  margin-bottom: 14px;
+  color: #647b8d;
+  font-size: 12px;
+}
+
+.leyenda span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.muestra {
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+}
+
+.muestra.hoy { background: #fff3cd; border-left: 4px solid #f59f00; }
+.muestra.proxima { background: #e7f1ff; border-left: 4px solid #3b82f6; }
+.muestra.vencida { background: #fdecec; border-left: 4px solid #dc3545; }
+
+td .selector-estado {
+  display: block;
+}
+
+@media (max-width: 900px) {
+  .indicadores {
+    grid-template-columns: 1fr;
+  }
+
+  .titulo-seccion {
+    flex-wrap: wrap;
   }
 }
