@@ -404,10 +404,3 @@
   .proxima-estado { text-align: left; }
 }
 
-.acciones-demo {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 22px;
-}
-.acciones-demo .btn { border-radius: 10px; font-weight: 700; padding: 7px 14px; }

@@ -7,8 +7,6 @@ import { DuenoService } from '../../services/dueno';
 import { HistorialService } from '../../services/historial';
 import { MascotaService } from '../../services/mascota';
 import {
-  ConfirmacionService,
-  DatosDemoService,
   EstadoCitaPipe,
   FechaLegiblePipe,
   FechaUtil,
@@ -41,10 +39,6 @@ export class Dashboard {
   private readonly citaService = inject(CitaService);
   private readonly historialService = inject(HistorialService);
   private readonly duenoService = inject(DuenoService);
-  private readonly datosDemo = inject(DatosDemoService);
-  private readonly confirmacion = inject(ConfirmacionService);
-
-  readonly hayDatos = this.datosDemo.hayDatos();
 
   /**
    * POLIMORFISMO: los cuatro servicios se manejan con el tipo base RepositorioLocal.
@@ -84,33 +78,5 @@ export class Dashboard {
 
   ir(ruta: string): void {
     this.router.navigate([ruta]);
-  }
-
-  /** Carga datos de ejemplo (fechas relativas a hoy) y recarga la app para leerlos. */
-  async cargarDemo(): Promise<void> {
-    if (this.hayDatos) {
-      const confirmado = await this.confirmacion.confirmar({
-        titulo: 'Restaurar datos de ejemplo',
-        mensaje: 'Se reemplazarán los dueños, mascotas, citas e historial que tengas registrados.',
-        detalle: 'Se cargarán 4 dueños, 6 mascotas, 14 citas y 5 atenciones de ejemplo.',
-        textoConfirmar: 'Sí, restaurar',
-        tipo: 'warning'
-      });
-      if (!confirmado) return;
-    }
-    this.datosDemo.cargar();
-    location.reload();
-  }
-
-  async borrarDatos(): Promise<void> {
-    const confirmado = await this.confirmacion.confirmar({
-      titulo: 'Borrar todos los datos',
-      mensaje: 'Se eliminarán todos los dueños, mascotas, citas e historial guardados en este navegador.',
-      detalle: 'Esta acción no se puede deshacer.',
-      textoConfirmar: 'Sí, borrar todo'
-    });
-    if (!confirmado) return;
-    this.datosDemo.borrarTodo();
-    location.reload();
   }
 }
